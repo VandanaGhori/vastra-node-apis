@@ -1,0 +1,22 @@
+{
+  "name": "node_apis",
+  "version": "1.0.0",
+  "description": "Vastra APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VandanaGhori/vastra-node-apis.git"
+  },
+  "author": "Vandana Ghori, Vidhi Patel, Shravani Gandla",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VandanaGhori/vastra-node-apis/issues"
+  },
+  "homepage": "https://github.com/VandanaGhori/vastra-node-apis#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
