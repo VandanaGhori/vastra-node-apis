@@ -1,9 +1,24 @@
-const express = require('express')
-var app = express()
-const port = 5000
+const express = require('express');
+var app = express();
+const port = 3000;
+app.use(express.json())
 
-app.get('/',function(req,res) {
+var products = require("./controller/product.js");
+var user = require("./controller/user.js");
+
+// -----------------Test router----------------
+app.get('/', function(req,res) {
     res.send('Get request to home page')
+})
+
+// -----------------Products-------------------
+app.get('/products', function(req,res) {
+    products.getAllProducts(req,res)
+})
+
+// -----------------Shopper/User----------------
+app.post('/user', function(req,res) {
+    user.addNewUser(req,res)
 })
 
 app.listen(port, () => {
