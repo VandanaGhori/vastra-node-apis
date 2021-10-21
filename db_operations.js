@@ -16,10 +16,9 @@ module.exports.user = {
     registerUser(table_name, values, callback) {
         var q = "Insert into " + table_name + " (email,password,firstName," +
            "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
-           //console.log(values);
         db.query(q, [values],function (err, res) {
             if(err) {
-                console.log("throw error");
+                //console.log("throw error");
                 callback(err,null);
             } 
             callback(null,res);
@@ -36,7 +35,6 @@ module.exports.user = {
     },
     getUser(table_name, email, callback) {
         var q = "Select * from " + table_name + " where email = '" + email + "'";
-        // console.log("Query: " + q);
         db.query(q,email,function(err,res) {
             if(err) {
                 callback(err, null);
@@ -47,7 +45,7 @@ module.exports.user = {
 }
 
 function postAllData(values) {
-    //var query = "Insert into ". table_name . " VALUES ?";
+
 }
 
 function putAllData() {

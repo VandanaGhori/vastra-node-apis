@@ -1,6 +1,7 @@
 const { json } = require("express");
 const db_operations = require("../db_operations");
 var md5 = require('md5');
+var crypto = require('crypto');
 
 module.exports = {
     addNewUser: function (req, res) {
@@ -28,44 +29,38 @@ module.exports = {
             if (err) {
                 return res.json(sendResponse(false, 500, "Opps something went wrong gdfgdfgdfg!"));
             } else if (!err) {
-                console.log("Email" + user.email);
                 let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
-                    console.log("User Response " + registeredUser[0]['id']);
+                    //console.log("User Response " + registeredUser[0]['id']);
                     if (err) {
-                        console.log("1111111111111")
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
-                    token = generateToken(registeredUser[0]['id']);
+                    var token = generateToken();
                     let userSession = {
                         'sessionToken': token,
-                        'userId': user_id,
+                        'userId': registeredUser[0]['id'],
                         'lastLoginTime': Date(),
                         'deviceId': input.deviceId
                     }
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
                         if (err) {
-                            console.log("2222222222222")
                             res.json(sendResponse(false, 500, "Opps something went wrong!"));
                         }
                     });
                     let output = {
-                        'user': response,
+                        'user': registeredUser,
                         'sessionToken': {
                             'token': token
                         }
                     }
-                    console.log("end!!")
-                    res.json(sendResponse(false, 500, "Opps something went wrong!", output));
+                    res.json(sendResponse(true, 200, "User registered successfully!", output));
                 })
             }
         });
     }
 }
 
-function generateToken(user_id) {
-    require('crypto').randomBytes(25, function (err, buffer) {
-        return buffer.toString('hex');
-    });
+function generateToken() {
+    return crypto.randomBytes(25).toString('hex');
 }
 
 function sendResponse(success, code, message, data = null) {

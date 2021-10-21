@@ -8,7 +8,7 @@ var connection = mysql.createConnection({
 });
 
 connection.connect(function (err) {
-    if (err) throw err + "Connection not established";
+    if (err) throw "Connection not established";
     console.log("Connected Successfully!!!");
 });
 
