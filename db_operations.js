@@ -16,19 +16,18 @@ module.exports.user = {
     registerUser(table_name, values, callback) {
         var q = "Insert into " + table_name + " (email,password,firstName," +
            "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
-        db.query(q, [values],function (err, res) {
+        db.query(q, [values], function (err, res) {
             if(err) {
-                //console.log("throw error");
-                callback(err,null);
+                return callback(err,null);
             } 
             callback(null,res);
         })
     },
-    createSession(table_name,values, callback) {
+    createSession(table_name, values, callback) {
         var q = "Insert into " + table_name + " (sessionToken, userId, lastLoginTime, deviceId) Values (?)";
         db.query(q, [values], function(err,res) {
             if(err) {
-                callback(err,null);
+                return callback(err,null);
             } 
             callback(null,res);
         })
@@ -37,7 +36,7 @@ module.exports.user = {
         var q = "Select * from " + table_name + " where email = '" + email + "'";
         db.query(q,email,function(err,res) {
             if(err) {
-                callback(err, null);
+                return callback(err, null);
             }
             callback(null,res);
         })

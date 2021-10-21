@@ -36,16 +36,18 @@ module.exports = {
                     if (err) {
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
+                    // Need to enter details into fashion designer's table
                     // let fashionDesigner = {
                     //     'userId' : registeredUser[0]['id'],
                     //     'brandName': input.brandName,
                     //     'tagline': input.tagline
                     // }
                     var token = generateToken();
+                    var date = new Date();
                     let userSession = {
                         'sessionToken': token,
                         'userId': registeredUser[0]['id'],
-                        'lastLoginTime': Date(),
+                        'lastLoginTime': date.toISOString().slice(0,19).replace('T',' '),
                         'deviceId': input.deviceId
                     }
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
@@ -60,7 +62,7 @@ module.exports = {
                         }
                     }
                     
-                    output['user']['userId'] = registeredUser[0]['id'];
+                    //output['user']['userId'] = registeredUser[0]['id'];
                     output['user']['brandName'] = input.brandName;
                     output['user']['userId'] = input.tagline;
 

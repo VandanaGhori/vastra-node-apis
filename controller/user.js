@@ -27,7 +27,7 @@ module.exports = {
         var values = Object.values(user)
         db_operations.user.registerUser("user", values, function (err, response) {
             if (err) {
-                return res.json(sendResponse(false, 500, "Opps something went wrong gdfgdfgdfg!"));
+                res.json(sendResponse(false, 500, "Opps something went wrong!"));
             } else if (!err) {
                 let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
                     //console.log("User Response " + registeredUser[0]['id']);
@@ -35,10 +35,11 @@ module.exports = {
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
                     var token = generateToken();
+                    var date = new Date();
                     let userSession = {
                         'sessionToken': token,
                         'userId': registeredUser[0]['id'],
-                        'lastLoginTime': Date(),
+                        'lastLoginTime': date.toISOString().slice(0,19).replace('T',' '),
                         'deviceId': input.deviceId
                     }
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
