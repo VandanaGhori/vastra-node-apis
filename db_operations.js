@@ -43,6 +43,18 @@ module.exports.user = {
     }
 }
 
+module.exports.fashionDesigner = {
+    addDesigner(table_name, values, callback) {
+        var q = "Insert into " + table_name + " (userId,brandName,tagline) Values (?)";
+        db.query(q, [values], function (err, res) {
+            if(err) {
+                return callback(err,null);
+            } 
+            callback(null,res);
+        })
+    },
+}
+
 function postAllData(values) {
 
 }

@@ -10,7 +10,8 @@ module.exports = {
             input.lastName == null || input.address == null || input.city == null || input.province == null
             || input.postalCode == null || input.type == null || input.deviceId == null || input.brandName == null
             || input.tagline == null) {
-            sendResponse({ success: false, code: 404, message: "Parameter(s) are missing" });
+            res.json(sendResponse(false, 404, "Parameter(s) are missing"));
+            return;
         }
         let user = {
             'email': input.email,
@@ -26,28 +27,32 @@ module.exports = {
         }
 
         var values = Object.values(user);
-
         db_operations.user.registerUser("user", values, function (err, response) {
             if (err) {
-                return res.json(sendResponse(false, 500, "Opps something went wrong gdfgdfgdfg!"));
+                res.json(sendResponse(false, 500, "Opps something went wrong!"));
             } else if (!err) {
                 let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
                     //console.log("User Response " + registeredUser[0]['id']);
                     if (err) {
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
-                    // Need to enter details into fashion designer's table
-                    // let fashionDesigner = {
-                    //     'userId' : registeredUser[0]['id'],
-                    //     'brandName': input.brandName,
-                    //     'tagline': input.tagline
-                    // }
+                    let fashionDesigner = {
+                        'userId': registeredUser[0]['id'],
+                        'brandName': input.brandName,
+                        'tagline': input.tagline
+                    }
+                    var designer = Object.values(fashionDesigner);
+                    db_operations.fashionDesigner.addDesigner("designer", designer, function (err, response) {
+                        if (err) {
+                            res.json(sendResponse(false, 500, "Opps something went wrong!"));
+                        }
+                    });
                     var token = generateToken();
                     var date = new Date();
                     let userSession = {
                         'sessionToken': token,
                         'userId': registeredUser[0]['id'],
-                        'lastLoginTime': date.toISOString().slice(0,19).replace('T',' '),
+                        'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
                         'deviceId': input.deviceId
                     }
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
@@ -56,15 +61,14 @@ module.exports = {
                         }
                     });
                     let output = {
-                        'user': registeredUser,
+                        'user': registeredUser[0],
                         'sessionToken': {
                             'token': token
                         }
                     }
-                    
-                    //output['user']['userId'] = registeredUser[0]['id'];
+
                     output['user']['brandName'] = input.brandName;
-                    output['user']['userId'] = input.tagline;
+                    output['user']['tagline'] = input.tagline;
 
                     res.json(sendResponse(true, 200, "Fashion Designer registered successfully!", output));
                 })

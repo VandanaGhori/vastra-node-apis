@@ -9,7 +9,8 @@ module.exports = {
         if (input.email == null || input.password == null || input.firstName == null ||
             input.lastName == null || input.address == null || input.city == null || input.province == null
             || input.postalCode == null || input.type == null || input.deviceId == null) {
-            sendResponse({ success: false, code: 404, message: "Parameter(s) are missing" });
+            res.json(sendResponse(false, 404, "Parameter(s) are missing"));
+            return;
         }
         let user = {
             'email': input.email,
@@ -39,7 +40,7 @@ module.exports = {
                     let userSession = {
                         'sessionToken': token,
                         'userId': registeredUser[0]['id'],
-                        'lastLoginTime': date.toISOString().slice(0,19).replace('T',' '),
+                        'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
                         'deviceId': input.deviceId
                     }
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
@@ -48,7 +49,7 @@ module.exports = {
                         }
                     });
                     let output = {
-                        'user': registeredUser,
+                        'user': registeredUser[0],
                         'sessionToken': {
                             'token': token
                         }
@@ -65,5 +66,5 @@ function generateToken() {
 }
 
 function sendResponse(success, code, message, data = null) {
-    return { 'success': success, "code": code, "message": message, "data": data};
+    return { 'success': success, "code": code, "message": message, "data": data };
 }
