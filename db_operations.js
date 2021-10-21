@@ -19,7 +19,7 @@ module.exports.user = {
            //console.log(values);
         db.query(q, [values],function (err, res) {
             if(err) {
-                console.log("throw error    ")
+                console.log("throw error");
                 callback(err,null);
             } 
             callback(null,res);
@@ -27,7 +27,7 @@ module.exports.user = {
     },
     createSession(table_name,values, callback) {
         var q = "Insert into " + table_name + " (sessionToken, userId, lastLoginTime, deviceId) Values (?)";
-        db.query(q,[values], function(err,res) {
+        db.query(q, [values], function(err,res) {
             if(err) {
                 callback(err,null);
             } 
@@ -35,7 +35,8 @@ module.exports.user = {
         })
     },
     getUser(table_name, email, callback) {
-        var q = "Select id from " + table_name + " where email = " + email;
+        var q = "Select * from " + table_name + " where email = '" + email + "'";
+        // console.log("Query: " + q);
         db.query(q,email,function(err,res) {
             if(err) {
                 callback(err, null);

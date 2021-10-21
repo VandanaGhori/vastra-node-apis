@@ -27,14 +27,15 @@ module.exports = {
         db_operations.user.registerUser("user", values, function (err, response) {
             if (err) {
                 return res.json(sendResponse(false, 500, "Opps something went wrong gdfgdfgdfg!"));
-            } else {
+            } else if (!err) {
                 console.log("Email" + user.email);
-                user_id = db_operations.user.getUser("user", user.email, function (err, user_id) {
+                let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
+                    console.log("User Response " + registeredUser[0]['id']);
                     if (err) {
                         console.log("1111111111111")
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
-                    token = generateToken(user_id);
+                    token = generateToken(registeredUser[0]['id']);
                     let userSession = {
                         'sessionToken': token,
                         'userId': user_id,
@@ -68,5 +69,5 @@ function generateToken(user_id) {
 }
 
 function sendResponse(success, code, message, data = null) {
-    return { 'success': success, "code": code, "message": message, "data": data };
+    return { 'success': success, "code": code, "message": message, "data": data};
 }
