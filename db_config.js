@@ -1,10 +1,10 @@
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "vastra"
+    host: process.env.HOST,
+    user: process.env.USERNAME,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
 });
 
 connection.connect(function (err) {
