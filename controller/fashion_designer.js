@@ -61,14 +61,14 @@ module.exports = {
                         }
                     });
                     let output = {
-                        'user': registeredUser[0],
+                        'designer': registeredUser[0],
                         'sessionToken': {
                             'token': token
                         }
                     }
 
-                    output['user']['brandName'] = input.brandName;
-                    output['user']['tagline'] = input.tagline;
+                    output['designer']['brandName'] = input.brandName;
+                    output['designer']['tagline'] = input.tagline;
 
                     res.json(sendResponse(true, 200, "Fashion Designer registered successfully!", output));
                 })

@@ -24,6 +24,10 @@ app.post('/user', function(req,res) {
     user.addNewUser(req,res)
 })
 
+app.post('/login/user', function(req,res) {
+    user.login(req,res)
+})
+
 // -----------------FashionDesigner-------------
 app.post('/fd/user', function(req,res) {
     fashionDesigner.addNewFashionDesigner(req,res)

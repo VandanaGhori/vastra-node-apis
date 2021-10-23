@@ -31,7 +31,6 @@ module.exports = {
                 res.json(sendResponse(false, 500, "Opps something went wrong!"));
             } else if (!err) {
                 let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
-                    //console.log("User Response " + registeredUser[0]['id']);
                     if (err) {
                         res.json(sendResponse(false, 500, "Opps something went wrong!"));
                     }
@@ -58,11 +57,72 @@ module.exports = {
                 })
             }
         });
+    },
+    login: function (req, res) {
+        input = req.body;
+        if (input.email == null || input.password == null || input.deviceId == null) {
+            res.json(sendResponse(false, 404, "Parameter(s) are missing"));
+            return;
+        }
+        let loginCredentials = {
+            'email': input.email,
+            'password': md5(input.password)
+        }
+        db_operations.user.checkLoginCredentials("user", loginCredentials, function (err, response) {
+            if (err) {
+                res.json(sendResponse(false, 500, "User does not exist!!!"));
+            } else if (!err) {
+                if (response.length != 0) {
+                    let user_id = response[0]['id'];
+                    updateUserSession(user_id, input.deviceId, function (output) {
+                        res.json(sendResponse(true, 200, "Logged in successfully!", output));
+                    });
+                } else {
+                    res.json(sendResponse(false, 500, "Invalid Credentials Provided!!!", response));
+                }
+            }
+        })
     }
 }
 
 function generateToken() {
     return crypto.randomBytes(25).toString('hex');
+}
+
+function updateUserSession(userId, deviceId, callback) {
+    let output = db_operations.user.checkSession("login", userId, function (err, response) {
+        if (err) {
+            res.json(sendResponse(false, 500, "Opps something went wrong!"))
+        }
+        if (response[0]['userId'] == 1) {
+            console.log("User found in Login table: " + response[0]['userId']);
+            db_operations.user.deleteSession("login", userId, function (err, response) {
+                if (err) {
+                    res.json(sendResponse(false, 500, "Opps something went wrong!"))
+                }
+                console.log("Record from login table deleted successully!!!")
+            })
+        }
+
+        var token = generateToken();
+        var date = new Date();
+        let userNewSession = {
+            'sessionToken': token,
+            'userId': userId,
+            'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
+            'deviceId': deviceId
+        }
+        db_operations.user.createSession("login", Object.values(userNewSession), function (err, response) {
+            if (err) {
+                res.json(sendResponse(false, 500, "Opps something went wrong!"));
+            }
+        });
+        output = {
+            'user': userId,
+            'sessionToken': token
+        }
+        callback(output);
+    })
 }
 
 function sendResponse(success, code, message, data = null) {
