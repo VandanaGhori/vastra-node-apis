@@ -15,7 +15,7 @@ module.exports = {
         }
         let user = {
             'email': input.email,
-            'password': md5(input.password),
+            //'password': md5(input.password),
             'firstName': input.firstName,
             'lastName': input.lastName,
             'address': input.address,

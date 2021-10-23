@@ -42,8 +42,18 @@ module.exports.user = {
             callback(null, res);
         })
     },
+    getShopperById(user_id, callback) {
+        var q = "Select id,email,firstName,lastName,address,city,province,"+
+        "postalCode,avatarURL,type from user where id = " + user_id;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    },
     checkLoginCredentials(table_name, login_param, callback) {
-        var q = "Select id from " + table_name + " Where email = '" + login_param.email +
+        var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +
             "' and password = '" + login_param.password + "'";
         db.query(q, function (err, res) {
             if (err) {
@@ -69,27 +79,7 @@ module.exports.user = {
             }
             callback(null,res);
         })
-    },
-    updateSession(table_name, user_id, device_id, callback) {
-        var q = "Select count(userId) from " + table_name + " where userId = " + user_id;
-        if (q) {
-            "Delete from"
-        } else {
-            var token = generateToken();
-            var date = new Date();
-            let userSession = {
-                'sessionToken': token,
-                'userId': registeredUser[0]['id'],
-                'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
-                'deviceId': input.deviceId
-            }
-            this.createSession(table_name, Object.values(userSession), function (err, response) {
-                if (err) {
-                    res.json(sendResponse(false, 500, "Opps something went wrong!"));
-                }
-            })
-        }
-    },
+    }
 }
 
 module.exports.fashionDesigner = {
@@ -102,16 +92,15 @@ module.exports.fashionDesigner = {
             callback(null, res);
         })
     },
-}
-
-function postAllData(values) {
-
-}
-
-function putAllData() {
-
-}
-
-function deleteAllData() {
-
+    getFashionDesignerById(user_id, callback) {
+        var q = "SELECT U.id, U.email, U.firstName, U.lastName, U.address, U.city, U.province, " +
+        "U.postalCode, U.avatarURL, U.type, D.brandName, D.tagline FROM user as U, designer as D where U.id = D.userId" + 
+        " and D.userId=" + user_id;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    }
 }

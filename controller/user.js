@@ -14,7 +14,7 @@ module.exports = {
         }
         let user = {
             'email': input.email,
-            'password': md5(input.password),
+            //'password': md5(input.password),
             'firstName': input.firstName,
             'lastName': input.lastName,
             'address': input.address,
@@ -74,8 +74,27 @@ module.exports = {
             } else if (!err) {
                 if (response.length != 0) {
                     let user_id = response[0]['id'];
-                    updateUserSession(user_id, input.deviceId, function (output) {
-                        res.json(sendResponse(true, 200, "Logged in successfully!", output));
+                    let user_type = response[0]['type'];
+                    updateUserSession(user_id, input.deviceId, user_type, function (output) {
+                        if (user_type == 1) {
+                            db_operations.user.getShopperById(user_id, function (err, shopper) {
+                                if (err) {
+                                    res.json(sendResponse(false, 500, "Opps something went wrong!"));
+                                }
+                                output['shopper'] = shopper[0];
+                                res.json(sendResponse(true, 200, "Shopper Logged in successfully!", output));
+                            })
+                        } else {
+                            db_operations.fashionDesigner.getFashionDesignerById(user_id, function (err, fashionDesigner) {
+                                if (err) {
+                                    res.json(sendResponse(false, 500, "Opps something went wrong!"));
+                                }
+                                if(fashionDesigner != null) {
+                                    output['fashionDesigner'] = fashionDesigner[0];
+                                    res.json(sendResponse(true, 200, "Fashion Designer Logged in successfully!", output));
+                                }
+                            })
+                        }
                     });
                 } else {
                     res.json(sendResponse(false, 500, "Invalid Credentials Provided!!!", response));
@@ -89,7 +108,7 @@ function generateToken() {
     return crypto.randomBytes(25).toString('hex');
 }
 
-function updateUserSession(userId, deviceId, callback) {
+function updateUserSession(userId, deviceId, user_type, callback) {
     let output = db_operations.user.checkSession("login", userId, function (err, response) {
         if (err) {
             res.json(sendResponse(false, 500, "Opps something went wrong!"))
@@ -118,8 +137,9 @@ function updateUserSession(userId, deviceId, callback) {
             }
         });
         output = {
-            'user': userId,
-            'sessionToken': token
+            'sessionToken': {
+                'token': token
+            }
         }
         callback(output);
     })
