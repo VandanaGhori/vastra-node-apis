@@ -6,9 +6,21 @@ module.exports.product = {
         var q = "Select * from " + table_name + " Where isDeleted = 0";
         db.query(q, function (err, res) {
             if (err) {
-                callback(err, null);
+                return callback(err, null);
             }
             callback(null, res);
+        })
+    }
+}
+
+module.exports.validate = {
+    validateToken(token, user_id, callback) {
+        var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "' and userId = " + user_id;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err,null);
+            }
+            callback(null,res);
         })
     }
 }
@@ -18,6 +30,17 @@ module.exports.user = {
         var q = "Insert into " + table_name + " (email,password,firstName," +
             "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
         db.query(q, [values], function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    },
+    updateUser(table_name, values, user_id, callback) {
+        var q = "Update " + table_name + " set password = ?, firstName = ?, lastName = ?, address = ?, city = ?, province = ?, " + 
+        "postalCode = ?, avatarURL = ? where id = " + user_id;
+        //console.log("Update Query = " + q);
+        db.query(q, [values.password,values.firstName,values.lastName,values.address,values.city,values.province,values.postalCode,values.avatarURL], function (err, res) {
             if (err) {
                 return callback(err, null);
             }
@@ -86,6 +109,15 @@ module.exports.fashionDesigner = {
     addDesigner(table_name, values, callback) {
         var q = "Insert into " + table_name + " (userId,brandName,tagline) Values (?)";
         db.query(q, [values], function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    },
+    updateFashionDesigner(table_name, values, user_id, callback) {
+        var q = "Update " + table_name + " set brandName = ?, tagline = ? where userId = " + user_id;
+        db.query(q, [values.brandName,values.tagline], function (err, res) {
             if (err) {
                 return callback(err, null);
             }

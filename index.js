@@ -6,6 +6,7 @@ app.use(express.json())
 var products = require("./controller/product.js");
 var user = require("./controller/user.js");
 var fashionDesigner = require("./controller/fashion_designer");
+const utils = require('./utils.js');
 
 // Creating routing
 
@@ -24,13 +25,21 @@ app.post('/user', function(req,res) {
     user.addNewUser(req,res)
 })
 
-app.post('/login/user', function(req,res) {
+app.post('/login', function(req,res) {
     user.login(req,res)
+})
+
+app.put('/user', function(req,res){
+    user.updateShopper(req,res)    
 })
 
 // -----------------FashionDesigner-------------
 app.post('/fd/user', function(req,res) {
     fashionDesigner.addNewFashionDesigner(req,res)
+})
+
+app.put('/fd/user', function(req,res){
+    fashionDesigner.updateFashionDesigner(req,res)
 })
 
 app.listen(port, () => {
