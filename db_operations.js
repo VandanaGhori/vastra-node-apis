@@ -14,13 +14,22 @@ module.exports.product = {
 }
 
 module.exports.validate = {
-    validateToken(token, user_id, callback) {
-        var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "' and userId = " + user_id;
+    validateToken(token, callback) {
+        var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "'";
         db.query(q, function (err, res) {
             if (err) {
                 return callback(err,null);
             }
             callback(null,res);
+        })
+    },
+    getUserIdFromToken(token, callback) {
+        var q = "Select userId from login where sessionToken = '" + token + "'";
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
         })
     }
 }
@@ -135,4 +144,16 @@ module.exports.fashionDesigner = {
             callback(null, res);
         })
     }
+}
+
+module.exports.catalogue = {
+    addCatalogue(table_name, values, callback) {
+        var q = "Insert into " + table_name + " (name,designerId) Values (?)";
+        db.query(q, [values], function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    },
 }

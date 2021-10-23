@@ -6,6 +6,7 @@ app.use(express.json())
 var products = require("./controller/product.js");
 var user = require("./controller/user.js");
 var fashionDesigner = require("./controller/fashion_designer");
+var catalogue = require('./controller/catalogue.js');
 const utils = require('./utils.js');
 
 // Creating routing
@@ -13,6 +14,15 @@ const utils = require('./utils.js');
 // -----------------Test router----------------
 app.get('/', function(req,res) {
     res.send('Get request to home page')
+})
+
+// -----------------Catalogue------------------
+app.post('/catalogue', function(req,res){
+    catalogue.createCatalogue(req,res)
+})
+
+app.get('/catalogue/list', function(req,res){
+
 })
 
 // -----------------Products-------------------

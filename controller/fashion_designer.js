@@ -94,7 +94,7 @@ module.exports = {
             return res.json(utils.sendResponse(false, 500, "Token is required for authorization!!!"))
         }
 
-        db_operations.validate.validateToken(token, input.id, function (err, response){
+        db_operations.validate.validateToken(token, function (err, response){
             if (err) {
                 res.json(utils.sendResponse(false, 500, "Opps something went wrong!"))
             } 
