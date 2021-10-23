@@ -48,7 +48,6 @@ module.exports.user = {
     updateUser(table_name, values, user_id, callback) {
         var q = "Update " + table_name + " set password = ?, firstName = ?, lastName = ?, address = ?, city = ?, province = ?, " + 
         "postalCode = ?, avatarURL = ? where id = " + user_id;
-        //console.log("Update Query = " + q);
         db.query(q, [values.password,values.firstName,values.lastName,values.address,values.city,values.province,values.postalCode,values.avatarURL], function (err, res) {
             if (err) {
                 return callback(err, null);
@@ -143,6 +142,15 @@ module.exports.fashionDesigner = {
             }
             callback(null, res);
         })
+    },
+    getDesignerIdFromUserId(user_id, callback) {
+        var q = "SELECT id from designer where userId=" + user_id;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
     }
 }
 
@@ -156,4 +164,22 @@ module.exports.catalogue = {
             callback(null, res);
         })
     },
+    getCatalogueById(table_name, catalogue_id, callback) {
+        var q = "SELECT * FROM " + table_name + " where id = " + catalogue_id;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    },
+    getAllCatalogue(table_name, callback){
+        var q = "SELECT * FROM " + table_name;
+        db.query(q, function (err, res) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, res);
+        })
+    }
 }

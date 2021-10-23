@@ -10,6 +10,7 @@ module.exports = {
                 if(products != null) {
                     res.json(utils.sendResponse(false, 200, "All the Products",products));
                 } 
+                res.json(utils.sendResponse(false, 200, "Data not exist!!!"));
             }
         });
     },

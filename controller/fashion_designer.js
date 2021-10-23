@@ -130,11 +130,10 @@ module.exports = {
                             }
                             res.json(utils.sendResponse(true, 200, "Designer profile is updated successfully!"));
                         })
-                        //res.json(utils.sendResponse(true, 200, "User updated successfully!"));
                     }
                 })
             } else {
-                res.json(utils.sendResponse(false, 500, "User is not authorized!!!"));
+                res.json(utils.sendResponse(false, 403, "User is not authorized!!!"));
             } 
         })
     }

@@ -152,7 +152,7 @@ module.exports = {
                     }
                 })
             } else {
-                res.json(utils.sendResponse(false, 500, "User is not authorized!!!"));
+                res.json(utils.sendResponse(false, 403, "User is not authorized!!!"));
             } 
         })
     }
