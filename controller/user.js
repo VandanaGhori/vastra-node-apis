@@ -27,13 +27,15 @@ module.exports = {
         }
 
         var values = Object.values(user)
+        let op = db_operations.user.registerUserV2("user", values);
         db_operations.user.registerUser("user", values, function (err, response) {
             if (err) {
                 res.json(utils.sendResponse(false, 500, "User already exist! Please use another email."));
-            } else if (!err) {
+            } else {
                 let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
                     if (err) {
                         res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                        return;
                     }
                     var token = generateToken();
                     var date = new Date();
@@ -46,6 +48,7 @@ module.exports = {
                     db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
                         if (err) {
                             res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                            return;
                         }
                     });
                     let user = {
@@ -66,10 +69,79 @@ module.exports = {
                             'token': token
                         }
                     }
-                    res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
+                    console.log(output)
+                    return res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
                 })
             }
         });
+    },
+    addNewUserV2: async function (req, res) {
+        input = req.body;
+        if (input.email == null || input.password == null || input.firstName == null ||
+            input.lastName == null || input.address == null || input.city == null || input.province == null
+            || input.postalCode == null || input.type == null || input.deviceId == null) {
+            res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+            return;
+        }
+
+        let userExist = await db_operations.user.getUserV2("user", input.email)
+        if (userExist) {
+            res.json(utils.sendResponse(false, 500, "You are already registered. Please Login."));
+            return;
+        }
+
+        let user = {
+            'email': input.email,
+            'password': md5(input.password),
+            'firstName': input.firstName,
+            'lastName': input.lastName,
+            'address': input.address,
+            'city': input.city,
+            'province': input.province,
+            'postalCode': input.postalCode,
+            'avatarURL': input.avatarURL ? input.avatarURL : null,
+            'type': input.type
+        }
+
+        var values = Object.values(user)
+        let result = db_operations.user.registerUserV2("user", values);
+
+        if (result != false) {
+            let registeredUser = await db_operations.user.getUserV2("user", user.email)
+            if (registeredUser != false) {
+                var token = generateToken();
+                var date = new Date();
+                let userSession = {
+                    'sessionToken': token,
+                    'userId': registeredUser['id'],
+                    'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
+                    'deviceId': input.deviceId
+                }
+                if (db_operations.user.createSessionV2("login", Object.values(userSession))) {
+                    let user = {
+                        'id': registeredUser.id,
+                        'email': registeredUser.email,
+                        'firstName': registeredUser.firstName,
+                        'lastName': registeredUser.lastName,
+                        'address': registeredUser.address,
+                        'city': registeredUser.city,
+                        'province': registeredUser.province,
+                        'postalCode': registeredUser.postalCode,
+                        'avatarURL': registeredUser.avatarURL ? registeredUser.avatarURL : null,
+                        'type': registeredUser.type
+                    }
+                    let output = {
+                        'user': user,
+                        'sessionToken': token
+                    }
+                    console.log(output)
+                    res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
+                    return;
+                }
+            }
+
+        }
+        return res.json(utils.sendResponse(false, 500, "Opps!!", []));
     },
     login: function (req, res) {
         input = req.body;
@@ -102,7 +174,7 @@ module.exports = {
                                 if (err) {
                                     res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
                                 }
-                                if(fashionDesigner != null) {
+                                if (fashionDesigner != null) {
                                     output['fashionDesigner'] = fashionDesigner[0];
                                     res.json(utils.sendResponse(true, 200, "Fashion Designer Logged in successfully!", output));
                                 }
@@ -115,17 +187,17 @@ module.exports = {
             }
         })
     },
-    updateShopper: function(req,res) {
+    updateShopper: function (req, res) {
         input = req.body;
         token = req.headers['token'];
-        if(token == null) {
+        if (token == null) {
             return res.json(utils.sendResponse(false, 500, "Token is required for authorization!!!"))
         }
 
-        db_operations.validate.validateToken(token,function (err, response){
+        db_operations.validate.validateToken(token, function (err, response) {
             if (err) {
                 res.json(utils.sendResponse(false, 500, "Opps something went wrong!"))
-            } 
+            }
             if (response[0]['sessionToken'] == 1) {
                 if (input.id == null || input.password == null || input.firstName == null ||
                     input.lastName == null || input.address == null || input.city == null || input.province == null
@@ -153,7 +225,7 @@ module.exports = {
                 })
             } else {
                 res.json(utils.sendResponse(false, 403, "User is not authorized!!!"));
-            } 
+            }
         })
     }
 }

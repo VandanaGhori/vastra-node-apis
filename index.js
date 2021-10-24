@@ -34,7 +34,7 @@ app.get('/products', function(req,res) {
 
 // -----------------Shopper/User----------------
 app.post('/user', function(req,res) {
-    user.addNewUser(req,res)
+    user.addNewUserV2(req,res)
 })
 
 app.post('/login', function(req,res) {
