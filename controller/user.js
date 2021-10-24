@@ -14,7 +14,7 @@ module.exports = {
             return;
         }
 
-        let userExist = await db_operations.user.getUserV2("user", input.email)
+        let userExist = await db_operations.user.getUser("user", input.email)
         if (userExist) {
             res.json(utils.sendResponse(false, 500, "You are already registered. Please Login."));
             return;
@@ -34,10 +34,10 @@ module.exports = {
         }
 
         var values = Object.values(user)
-        let result = await db_operations.user.registerUserV2("user", values);
+        let result = await db_operations.user.registerUser("user", values);
 
         if (result != false) {
-            let registeredUser = await db_operations.user.getUserV2("user", user.email)
+            let registeredUser = await db_operations.user.getUser("user", user.email)
             if (registeredUser != false) {
                 var token = generateToken();
                 var date = new Date();
@@ -47,7 +47,7 @@ module.exports = {
                     'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
                     'deviceId': input.deviceId
                 }
-                if (await db_operations.user.createSessionV2("login", Object.values(userSession))) {
+                if (await db_operations.user.createSession("login", Object.values(userSession))) {
                     let user = {
                         'userId': registeredUser.id,
                         'email': registeredUser.email,
@@ -64,7 +64,7 @@ module.exports = {
                         'user': user,
                         'sessionToken': token
                     }
-                    console.log(output)
+                    //console.log(output)
                     res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
                     return;
                 }
@@ -85,17 +85,17 @@ module.exports = {
             'password': md5(input.password)
         }
 
-        let loginResponse = await db_operations.user.checkLoginCredentialsV2("user", loginCredentials);
+        let loginResponse = await db_operations.user.checkLoginCredentials("user", loginCredentials);
 
         if (loginResponse != false) {
             let user_id = loginResponse['id'];
             let user_type = loginResponse['type'];
             let sessionResult = await updateUserSession(user_id, input.deviceId);
-            if(sessionResult != false) {
+            if (sessionResult != false) {
                 let token = sessionResult;
-                if(user_type == 1){
+                if (user_type == 1) {
                     let shopperResponse = await db_operations.user.getShopperById(user_id);
-                    if(shopperResponse != false) {
+                    if (shopperResponse != false) {
                         let user = {
                             'userId': shopperResponse.id,
                             'email': shopperResponse.email,
@@ -112,11 +112,11 @@ module.exports = {
                             'user': user,
                             'sessionToken': token
                         }
-                        return res.json(utils.sendResponse(true, 200, "User loggedIn successfully!", output));  
-                    } 
+                        return res.json(utils.sendResponse(true, 200, "User loggedIn successfully!", output));
+                    }
                 } else {
                     let designerResponse = await db_operations.fashionDesigner.getFashionDesignerById(user_id);
-                    if(designerResponse != false) {
+                    if (designerResponse != false) {
                         let designer = {
                             'userId': designerResponse.userId,
                             'email': designerResponse.email,
@@ -136,53 +136,48 @@ module.exports = {
                             'designer': designer,
                             'sessionToken': token
                         }
-                        return res.json(utils.sendResponse(true, 200, "Designer loggedIn successfully!", output)); 
+                        return res.json(utils.sendResponse(true, 200, "Designer loggedIn successfully!", output));
                     }
                 }
             }
         }
         return res.json(utils.sendResponse(false, 403, "Your session is expired!", []));
     },
-    updateShopper: function (req, res) {
+    updateShopper: async function (req, res) {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!!!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
         }
 
-        db_operations.validate.validateToken(token, function (err, response) {
-            if (err) {
-                res.json(utils.sendResponse(false, 500, "Opps something went wrong!"))
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult != false) {
+            if (input.id == null || input.password == null || input.firstName == null ||
+                input.lastName == null || input.address == null || input.city == null || input.province == null
+                || input.postalCode == null) {
+                res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+                return;
             }
-            if (response[0]['sessionToken'] == 1) {
-                if (input.id == null || input.password == null || input.firstName == null ||
-                    input.lastName == null || input.address == null || input.city == null || input.province == null
-                    || input.postalCode == null) {
-                    res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
-                    return;
-                }
-                let user = {
-                    'password': md5(input.password),
-                    'firstName': input.firstName,
-                    'lastName': input.lastName,
-                    'address': input.address,
-                    'city': input.city,
-                    'province': input.province,
-                    'postalCode': input.postalCode,
-                    'avatarURL': input.avatarURL ? input.avatarURL : null
-                }
-                var user_id = input.id;
-                db_operations.user.updateUser("user", user, user_id, function (err, response) {
-                    if (err) {
-                        res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-                    } else {
-                        res.json(utils.sendResponse(true, 200, "User Profile is updated successfully!"));
-                    }
-                })
+            let user = {
+                'password': md5(input.password),
+                'firstName': input.firstName,
+                'lastName': input.lastName,
+                'address': input.address,
+                'city': input.city,
+                'province': input.province,
+                'postalCode': input.postalCode,
+                'avatarURL': input.avatarURL ? input.avatarURL : null
+            }
+            var user_id = input.id;
+            let updateUserResponse = await db_operations.user.updateUser("user", user, user_id);
+            if (updateUserResponse != false) {
+                return res.json(utils.sendResponse(true, 200, "User Profile is updated successfully!"));
             } else {
-                res.json(utils.sendResponse(false, 403, "User is not authorized!!!"));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!", []));
             }
-        })
+        } else {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+        }
     }
 }
 
@@ -196,8 +191,8 @@ async function updateUserSession(userId, deviceId) {
             'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
             'deviceId': deviceId
         }
-        let output = await db_operations.user.createSessionV2("login", Object.values(userNewSession));
-        if(output == false) {
+        let output = await db_operations.user.createSession("login", Object.values(userNewSession));
+        if (output == false) {
             return false;
         }
         return token;

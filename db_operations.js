@@ -17,14 +17,15 @@ module.exports.product = {
 }
 
 module.exports.validate = {
-    validateToken(token, callback) {
-        var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "'";
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async validateToken(token) {
+        try {
+            //var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "'";
+            var q = "Select * from login where sessionToken = '" + token + "'";
+            const data = await query(q);
+            return data[0];
+        } catch (err) {
+            return err;
+        }
     },
     getUserIdFromToken(token, callback) {
         var q = "Select userId from login where sessionToken = '" + token + "'";
@@ -38,17 +39,7 @@ module.exports.validate = {
 }
 
 module.exports.user = {
-    registerUser(table_name, values, callback) {
-        var q = "Insert into " + table_name + " (email,password,firstName," +
-            "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
-        db.query(q, [values], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            return callback(null, res);
-        })
-    },
-    async registerUserV2(table_name, values) {
+    async registerUser(table_name, values) {
         try {
             var q = "Insert into " + table_name + " (email,password,firstName," +
                 "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
@@ -58,26 +49,17 @@ module.exports.user = {
             return false;
         }
     },
-    updateUser(table_name, values, user_id, callback) {
-        var q = "Update " + table_name + " set password = ?, firstName = ?, lastName = ?, address = ?, city = ?, province = ?, " +
+    async updateUser(table_name, values, user_id) {
+        try {
+            var q = "Update " + table_name + " set password = ?, firstName = ?, lastName = ?, address = ?, city = ?, province = ?, " +
             "postalCode = ?, avatarURL = ? where id = " + user_id;
-        db.query(q, [values.password, values.firstName, values.lastName, values.address, values.city, values.province, values.postalCode, values.avatarURL], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+            const rows = await query(q,[values.password, values.firstName, values.lastName, values.address, values.city, values.province, values.postalCode, values.avatarURL]);
+            return rows
+        } catch (err) {
+            return false
+        }
     },
-    createSession(table_name, values, callback) {
-        var q = "Insert into " + table_name + " (sessionToken, userId, lastLoginTime, deviceId) Values (?)";
-        db.query(q, [values], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            return callback(null, res);
-        })
-    },
-    async createSessionV2(table_name, values) {
+    async createSession(table_name, values) {
         try {
             var q = "Insert into " + table_name + " (sessionToken, userId, lastLoginTime, deviceId) Values (?)";
             const rows = await query(q, [values]);
@@ -86,16 +68,7 @@ module.exports.user = {
             return false;
         }
      },
-    getUser(table_name, email, callback) {
-        var q = "Select * from " + table_name + " where email = '" + email + "'";
-        db.query(q, email, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            return callback(null, res);
-        })
-    },
-    async getUserV2(table_name, email) {
+    async getUser(table_name, email) {
         try {
             var q = "Select * from " + table_name + " where email = '" + email + "'";
             const data = await query(q);
@@ -114,21 +87,10 @@ module.exports.user = {
             return err;
         }
     },
-    checkLoginCredentials(table_name, login_param, callback) {
-        var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +
-            "' and password = '" + login_param.password + "'";
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
-    },
-    async checkLoginCredentialsV2(table_name, login_param) {
+    async checkLoginCredentials(table_name, login_param) {
         try {
             var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +
             "' and password = '" + login_param.password + "'";
-            //console.log("Query " + q);
             const data = await query(q);
             return data[0]
         } catch (err) {
@@ -166,16 +128,7 @@ module.exports.user = {
 }
 
 module.exports.fashionDesigner = {
-    addDesigner(table_name, values, callback) {
-        var q = "Insert into " + table_name + " (userId,brandName,tagline) Values (?)";
-        db.query(q, [values], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
-    },
-    async addDesignerV2(table_name, values) {
+    async addDesigner(table_name, values) {
         try{
             var q = "Insert into " + table_name + " (userId,brandName,tagline) Values (?)";
             const rows = await query(q, [values]);
@@ -184,14 +137,14 @@ module.exports.fashionDesigner = {
             return false;
         }
     },
-    updateFashionDesigner(table_name, values, user_id, callback) {
-        var q = "Update " + table_name + " set brandName = ?, tagline = ? where userId = " + user_id;
-        db.query(q, [values.brandName, values.tagline], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async updateFashionDesigner(table_name, values, user_id) {
+        try {
+            var q = "Update " + table_name + " set brandName = ?, tagline = ? where userId = " + user_id;
+            const rows = await query(q,[values.brandName, values.tagline]);
+            return rows;
+        } catch (err) {
+            return err;
+        }
     },
     async getFashionDesignerById(user_id) {
         try {
@@ -225,23 +178,32 @@ module.exports.fashionDesigner = {
 }
 
 module.exports.catalogue = {
-    addCatalogue(table_name, values, callback) {
-        var q = "Insert into " + table_name + " (name,designerId) Values (?)";
-        db.query(q, [values], function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async addCatalogue(table_name, values) {
+        try {
+            var q = "Insert into " + table_name + " (name,designerId) Values (?)";
+            const rows = await query(q,[values]);
+            return rows;
+        } catch (err) {
+            return false;
+        }
     },
-    getCatalogueById(table_name, catalogue_id, callback) {
-        var q = "SELECT * FROM " + table_name + " where id = " + catalogue_id;
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async getCatalogueById(table_name, catalogue_id) {
+        try {
+            var q = "SELECT * FROM " + table_name + " where id = " + catalogue_id;
+            const data = await query(q);
+            return data[0];
+        } catch(err) {
+            return false;
+        }
+    },
+    async isCatalogueExist(table_name, catalogueName, designerId) {
+        try {
+            var q = "SELECT count(*) as noOfCatalogueExist FROM " + table_name + " where name = '" + catalogueName + "' and designerId = " + designerId;
+            const data = await query(q);
+            return data[0];
+        } catch(err) {
+            return false;
+        }
     },
     getAllCatalogue(table_name, callback) {
         var q = "SELECT * FROM " + table_name;

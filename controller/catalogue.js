@@ -3,57 +3,48 @@ const db_operations = require("../db_operations");
 var utils = require('../utils');
 
 
-// NAme and designer Id in body and token in header
+// Name and designer Id in body and token in header
 module.exports = {
-    createCatalogue: function (req, res) {
+    createCatalogue: async function (req, res) {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!!!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
         }
-        db_operations.validate.validateToken(token, function (err, response) {
-            if (err) {
-                res.json(utils.sendResponse(false, 500, "Opps something went wrong!----1"))
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+
+        if (validateTokenResult != false) {
+            if (input.name == null || input.designerId == null) {
+                res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+                return;
             }
-            if (response[0]['sessionToken'] == 1) {
-                if (input.name == null) {
-                    res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
-                    return;
+
+            let catalogueExist = await db_operations.catalogue.isCatalogueExist("catalogue", input.name, input.designerId);
+            //console.log("CatalogueExist = " + catalogueExist['noOfCatalogueExist']);
+            if(catalogueExist['noOfCatalogueExist'] > 0) {
+                res.json(utils.sendResponse(false, 500, "Catalogue is already exist!"));
+                return;
+            }
+
+            let catalogue = {
+                'name': input.name,
+                'designerId': input.designerId
+            }
+            var catalogueObj = Object.values(catalogue);
+            let addCatalogueResponse = await db_operations.catalogue.addCatalogue("catalogue", catalogueObj);
+            if(addCatalogueResponse != false) {
+                let getCatalogueByIdResponse = await db_operations.catalogue.getCatalogueById("catalogue", addCatalogueResponse.insertId);
+                if(getCatalogueByIdResponse != false) {
+                    return res.json(utils.sendResponse(true, 200, "Catalogue created!", getCatalogueByIdResponse));
+                } else {
+                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
                 }
-                db_operations.validate.getUserIdFromToken(token, function (err, response) {
-                    if (err) {
-                        res.json(utils.sendResponse(false, 500, "Opps something went wrong!----2"))
-                    }
-                    userId = response[0]['userId'];
-                    db_operations.fashionDesigner.getDesignerIdFromUserId(userId, function (err, response) {
-                        if (err) {
-                            res.json(utils.sendResponse(false, 500, "Opps something went wrong!----3"))
-                        }
-                        designerId = response[0]['id'];
-                        let catalogue = {
-                            'name': input.name,
-                            'designerId': designerId
-                        }
-                        var catalogueObj = Object.values(catalogue)
-                        db_operations.catalogue.addCatalogue("catalogue", catalogueObj, function (err, response) {
-                            if (err) {
-                                res.json(utils.sendResponse(false, 500, "Opps something went wrong!-----4"));
-                            } else {
-                                console.log(response.insertId);
-                                db_operations.catalogue.getCatalogueById("catalogue", response.insertId, function (err, catalogueResponse) {
-                                    if (err) {
-                                        res.json(utils.sendResponse(false, 500, "Opps something went wrong!-----5"));
-                                    } else {
-                                        res.json(utils.sendResponse(true, 200, "Catalogue created!", catalogueResponse[0]));
-                                    }
-                                })
-                            }
-                        })
-                    })
-                })
             } else {
-                res.json(utils.sendResponse(false, 403, "User is not authorized!!!"));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
             }
-        })
+        } else {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+        }
     }
 }
