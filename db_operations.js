@@ -155,6 +155,15 @@ module.exports.fashionDesigner = {
             callback(null, res);
         })
     },
+    async addDesignerV2(table_name, values) {
+        try{
+            var q = "Insert into " + table_name + " (userId,brandName,tagline) Values (?)";
+            const rows = await query(q, [values]);
+            return rows;
+        } catch(err) {
+            return false;
+        }
+    },
     updateFashionDesigner(table_name, values, user_id, callback) {
         var q = "Update " + table_name + " set brandName = ?, tagline = ? where userId = " + user_id;
         db.query(q, [values.brandName, values.tagline], function (err, res) {
@@ -183,7 +192,16 @@ module.exports.fashionDesigner = {
             }
             callback(null, res);
         })
-    }
+    },
+    async getDesigner(table_name, user_id) {
+        try {
+            var q = "Select * from " + table_name + " where userId = " + user_id;
+            const data = await query(q);
+            return data[0]
+        } catch (err) {
+            return false;
+        }
+    },
 }
 
 module.exports.catalogue = {

@@ -47,7 +47,7 @@ app.put('/user', function(req,res){
 
 // -----------------FashionDesigner-------------
 app.post('/fd/user', function(req,res) {
-    fashionDesigner.addNewFashionDesigner(req,res)
+    fashionDesigner.addNewFashionDesignerV2(req,res)
 })
 
 app.put('/fd/user', function(req,res){
