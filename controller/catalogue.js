@@ -2,6 +2,8 @@ const { json } = require("express");
 const db_operations = require("../db_operations");
 var utils = require('../utils');
 
+
+// NAme and designer Id in body and token in header
 module.exports = {
     createCatalogue: function (req, res) {
         input = req.body;

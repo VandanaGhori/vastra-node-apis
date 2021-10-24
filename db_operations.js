@@ -81,7 +81,6 @@ module.exports.user = {
         try {
             var q = "Insert into " + table_name + " (sessionToken, userId, lastLoginTime, deviceId) Values (?)";
             const rows = await query(q, [values]);
-            console.log(rows)
             return rows
         } catch (err) {
             return false;
@@ -105,15 +104,15 @@ module.exports.user = {
             return false;
         }
     },
-    getShopperById(user_id, callback) {
-        var q = "Select id,email,firstName,lastName,address,city,province," +
+    async getShopperById(user_id) {
+        try {
+            var q = "Select id,email,firstName,lastName,address,city,province," +
             "postalCode,avatarURL,type from user where id = " + user_id;
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+            const data = await query(q);
+            return data[0];
+        } catch(err) {
+            return err;
+        }
     },
     checkLoginCredentials(table_name, login_param, callback) {
         var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +
@@ -125,6 +124,17 @@ module.exports.user = {
             callback(null, res);
         })
     },
+    async checkLoginCredentialsV2(table_name, login_param) {
+        try {
+            var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +
+            "' and password = '" + login_param.password + "'";
+            //console.log("Query " + q);
+            const data = await query(q);
+            return data[0]
+        } catch (err) {
+            return false;
+        }
+    },
     checkSession(table_name, user_id, callback) {
         var q = "Select count(userId) as userId from " + table_name + " where userId = " + user_id;
         db.query(q, function (err, res) {
@@ -134,14 +144,24 @@ module.exports.user = {
             callback(null, res);
         })
     },
-    deleteSession(table_name, user_id, callback) {
-        var q = "Delete from " + table_name + " Where userId = " + user_id;
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async checkSession2(table_name, user_id) {
+        try {
+            var q = "Select count(userId) as userId from " + table_name + " where userId = " + user_id;
+            const data = await query(q);
+            return data[0]
+        } catch (err) {
+            return false;
+        }
+    },
+    async deleteSession(table_name, user_id) {
+        try {
+            var q = "Delete from " + table_name + " Where userId = " + user_id;
+            const rows = await query(q);
+            console.log("Delete record " + rows)
+            return rows
+        } catch (err) {
+            return false;
+        }
     }
 }
 
@@ -173,16 +193,16 @@ module.exports.fashionDesigner = {
             callback(null, res);
         })
     },
-    getFashionDesignerById(user_id, callback) {
-        var q = "SELECT U.id, U.email, U.firstName, U.lastName, U.address, U.city, U.province, " +
-            "U.postalCode, U.avatarURL, U.type, D.brandName, D.tagline FROM user as U, designer as D where U.id = D.userId" +
+    async getFashionDesignerById(user_id) {
+        try {
+            var q = "SELECT U.id as userId, U.email, U.firstName, U.lastName, U.address, U.city, U.province, " +
+            "U.postalCode, U.avatarURL, U.type, D.id as designerId, D.brandName, D.tagline FROM user as U, designer as D where U.id = D.userId" +
             " and D.userId=" + user_id;
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+            const data = await query(q);
+            return data[0];
+        } catch(err) {
+            return err;
+        }
     },
     getDesignerIdFromUserId(user_id, callback) {
         var q = "SELECT id from designer where userId=" + user_id;

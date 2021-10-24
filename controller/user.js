@@ -5,77 +5,7 @@ var crypto = require('crypto');
 var utils = require('../utils');
 
 module.exports = {
-    addNewUser: function (req, res) {
-        input = req.body;
-        if (input.email == null || input.password == null || input.firstName == null ||
-            input.lastName == null || input.address == null || input.city == null || input.province == null
-            || input.postalCode == null || input.type == null || input.deviceId == null) {
-            res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
-            return;
-        }
-        let user = {
-            'email': input.email,
-            'password': md5(input.password),
-            'firstName': input.firstName,
-            'lastName': input.lastName,
-            'address': input.address,
-            'city': input.city,
-            'province': input.province,
-            'postalCode': input.postalCode,
-            'avatarURL': input.avatarURL ? input.avatarURL : null,
-            'type': input.type
-        }
-
-        var values = Object.values(user)
-        let op = db_operations.user.registerUserV2("user", values);
-        db_operations.user.registerUser("user", values, function (err, response) {
-            if (err) {
-                res.json(utils.sendResponse(false, 500, "User already exist! Please use another email."));
-            } else {
-                let registeredUser = db_operations.user.getUser("user", user.email, function (err, registeredUser) {
-                    if (err) {
-                        res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-                        return;
-                    }
-                    var token = generateToken();
-                    var date = new Date();
-                    let userSession = {
-                        'sessionToken': token,
-                        'userId': registeredUser[0]['id'],
-                        'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
-                        'deviceId': input.deviceId
-                    }
-                    db_operations.user.createSession("login", Object.values(userSession), function (err, response) {
-                        if (err) {
-                            res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-                            return;
-                        }
-                    });
-                    let user = {
-                        'id': registeredUser[0].id,
-                        'email': registeredUser[0].email,
-                        'firstName': registeredUser[0].firstName,
-                        'lastName': registeredUser[0].lastName,
-                        'address': registeredUser[0].address,
-                        'city': registeredUser[0].city,
-                        'province': registeredUser[0].province,
-                        'postalCode': registeredUser[0].postalCode,
-                        'avatarURL': registeredUser[0].avatarURL ? registeredUser[0].avatarURL : null,
-                        'type': registeredUser[0].type
-                    }
-                    let output = {
-                        'user': user,
-                        'sessionToken': {
-                            'token': token
-                        }
-                    }
-                    console.log(output)
-                    return res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
-                })
-            }
-        });
-    },
-    addNewUserV2: async function (req, res) {
+    addNewUser: async function (req, res) {
         input = req.body;
         if (input.email == null || input.password == null || input.firstName == null ||
             input.lastName == null || input.address == null || input.city == null || input.province == null
@@ -104,7 +34,7 @@ module.exports = {
         }
 
         var values = Object.values(user)
-        let result = db_operations.user.registerUserV2("user", values);
+        let result = await db_operations.user.registerUserV2("user", values);
 
         if (result != false) {
             let registeredUser = await db_operations.user.getUserV2("user", user.email)
@@ -117,7 +47,7 @@ module.exports = {
                     'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
                     'deviceId': input.deviceId
                 }
-                if (db_operations.user.createSessionV2("login", Object.values(userSession))) {
+                if (await db_operations.user.createSessionV2("login", Object.values(userSession))) {
                     let user = {
                         'userId': registeredUser.id,
                         'email': registeredUser.email,
@@ -143,49 +73,75 @@ module.exports = {
         }
         return res.json(utils.sendResponse(false, 500, "Opps!!", []));
     },
-    login: function (req, res) {
+    login: async function (req, res) {
         input = req.body;
         if (input.email == null || input.password == null || input.deviceId == null) {
             res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
             return;
         }
+
         let loginCredentials = {
             'email': input.email,
             'password': md5(input.password)
         }
-        db_operations.user.checkLoginCredentials("user", loginCredentials, function (err, response) {
-            if (err) {
-                res.json(utils.sendResponse(false, 500, "User does not exist!!!"));
-            } else if (!err) {
-                if (response.length != 0) {
-                    let user_id = response[0]['id'];
-                    let user_type = response[0]['type'];
-                    updateUserSession(user_id, input.deviceId, function (output) {
-                        if (user_type == 1) {
-                            db_operations.user.getShopperById(user_id, function (err, shopper) {
-                                if (err) {
-                                    res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-                                }
-                                output['shopper'] = shopper[0];
-                                res.json(utils.sendResponse(true, 200, "Shopper Logged in successfully!", output));
-                            })
-                        } else {
-                            db_operations.fashionDesigner.getFashionDesignerById(user_id, function (err, fashionDesigner) {
-                                if (err) {
-                                    res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-                                }
-                                if (fashionDesigner != null) {
-                                    output['fashionDesigner'] = fashionDesigner[0];
-                                    res.json(utils.sendResponse(true, 200, "Fashion Designer Logged in successfully!", output));
-                                }
-                            })
+
+        let loginResponse = await db_operations.user.checkLoginCredentialsV2("user", loginCredentials);
+
+        if (loginResponse != false) {
+            let user_id = loginResponse['id'];
+            let user_type = loginResponse['type'];
+            let sessionResult = await updateUserSession(user_id, input.deviceId);
+            if(sessionResult != false) {
+                let token = sessionResult;
+                if(user_type == 1){
+                    let shopperResponse = await db_operations.user.getShopperById(user_id);
+                    if(shopperResponse != false) {
+                        let user = {
+                            'userId': shopperResponse.id,
+                            'email': shopperResponse.email,
+                            'firstName': shopperResponse.firstName,
+                            'lastName': shopperResponse.lastName,
+                            'address': shopperResponse.address,
+                            'city': shopperResponse.city,
+                            'province': shopperResponse.province,
+                            'postalCode': shopperResponse.postalCode,
+                            'avatarURL': shopperResponse.avatarURL ? shopperResponse.avatarURL : null,
+                            'type': shopperResponse.type
                         }
-                    });
+                        let output = {
+                            'user': user,
+                            'sessionToken': token
+                        }
+                        return res.json(utils.sendResponse(true, 200, "User loggedIn successfully!", output));  
+                    } 
                 } else {
-                    res.json(utils.sendResponse(false, 500, "Invalid Credentials Provided!!!", response));
+                    let designerResponse = await db_operations.fashionDesigner.getFashionDesignerById(user_id);
+                    if(designerResponse != false) {
+                        let designer = {
+                            'userId': designerResponse.userId,
+                            'email': designerResponse.email,
+                            'firstName': designerResponse.firstName,
+                            'lastName': designerResponse.lastName,
+                            'address': designerResponse.address,
+                            'city': designerResponse.city,
+                            'province': designerResponse.province,
+                            'postalCode': designerResponse.postalCode,
+                            'avatarURL': designerResponse.avatarURL ? designerResponse.avatarURL : null,
+                            'type': designerResponse.type,
+                            'id': designerResponse.designerId,
+                            'brandName': designerResponse.brandName,
+                            'tagline': designerResponse.tagline
+                        }
+                        let output = {
+                            'designer': designer,
+                            'sessionToken': token
+                        }
+                        return res.json(utils.sendResponse(true, 200, "Designer loggedIn successfully!", output)); 
+                    }
                 }
             }
-        })
+        }
+        return res.json(utils.sendResponse(false, 403, "Your session is expired!", []));
     },
     updateShopper: function (req, res) {
         input = req.body;
@@ -230,19 +186,8 @@ module.exports = {
     }
 }
 
-function updateUserSession(userId, deviceId, callback) {
-    let output = db_operations.user.checkSession("login", userId, function (err, response) {
-        if (err) {
-            res.json(utils.sendResponse(false, 500, "Opps something went wrong!"))
-        }
-        if (response[0]['userId'] == 1) {
-            db_operations.user.deleteSession("login", userId, function (err, response) {
-                if (err) {
-                    res.json(utils.sendResponse(false, 500, "Opps something went wrong!"))
-                }
-            })
-        }
-
+async function updateUserSession(userId, deviceId) {
+    if (await db_operations.user.deleteSession("login", userId)) {
         var token = generateToken();
         var date = new Date();
         let userNewSession = {
@@ -251,18 +196,13 @@ function updateUserSession(userId, deviceId, callback) {
             'lastLoginTime': date.toISOString().slice(0, 19).replace('T', ' '),
             'deviceId': deviceId
         }
-        db_operations.user.createSession("login", Object.values(userNewSession), function (err, response) {
-            if (err) {
-                res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
-            }
-        });
-        output = {
-            'sessionToken': {
-                'token': token
-            }
+        let output = await db_operations.user.createSessionV2("login", Object.values(userNewSession));
+        if(output == false) {
+            return false;
         }
-        callback(output);
-    })
+        return token;
+    }
+    return false;
 }
 
 function generateToken() {
