@@ -119,7 +119,7 @@ module.exports = {
                 }
                 if (db_operations.user.createSessionV2("login", Object.values(userSession))) {
                     let user = {
-                        'id': registeredUser.id,
+                        'userId': registeredUser.id,
                         'email': registeredUser.email,
                         'firstName': registeredUser.firstName,
                         'lastName': registeredUser.lastName,
