@@ -9,6 +9,8 @@ var products = require("./controller/product.js");
 var user = require("./controller/user.js");
 var fashionDesigner = require("./controller/fashion_designer");
 var catalogue = require('./controller/catalogue.js');
+var color = require('./controller/color.js');
+var productType = require('./controller/product_type.js');
 const utils = require('./utils.js');
 
 // Creating routing
@@ -24,12 +26,21 @@ app.post('/catalogue', function(req,res){
 })
 
 app.get('/catalogue/list', function(req,res){
-
+    catalogue.getCatalogues(req,res)
 })
 
 // -----------------Products-------------------
-app.get('/products', function(req,res) {
+app.get('/product', function(req,res) {
     products.getAllProducts(req,res)
+})
+
+app.post('/product', function(req,res){
+    products.createProduct(req,res)
+})
+
+// -----------------ProductType------------
+app.get('/product/type/list', function(req,res){
+    productType.getProductTypes(req,res)
 })
 
 // -----------------Shopper/User----------------
@@ -52,6 +63,11 @@ app.post('/fd/user', function(req,res) {
 
 app.put('/fd/user', function(req,res){
     fashionDesigner.updateFashionDesigner(req,res)
+})
+
+// -----------------Color------------------------
+app.get('/color/list', function(req,res){
+    color.getColors(req,res)
 })
 
 app.listen(port, () => {

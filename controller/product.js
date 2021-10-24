@@ -14,7 +14,8 @@ module.exports = {
             }
         });
     },
-    getProductWithId: {
+    createProduct: async function (req,res) {
+        input = req.body;
         
     }
 };

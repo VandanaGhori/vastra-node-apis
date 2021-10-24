@@ -16,6 +16,18 @@ module.exports.product = {
     }
 }
 
+module.exports.productType = {
+    async getAllProductTypes(table_name) {
+        try {
+            var q = "SELECT * FROM " + table_name;
+            const data = await query(q);
+            return data;
+        } catch(err) {
+            return false;
+        }
+    }
+}
+
 module.exports.validate = {
     async validateToken(token) {
         try {
@@ -205,13 +217,26 @@ module.exports.catalogue = {
             return false;
         }
     },
-    getAllCatalogue(table_name, callback) {
-        var q = "SELECT * FROM " + table_name;
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async getAllCatalogue(table_name, designerId) {
+        try {
+            var q = "SELECT * FROM " + table_name + " where designerId = " + designerId;
+            const data = await query(q);
+            //console.log("Data " + data.length);
+            return data;    
+        } catch (err) {
+            return false;
+        }
+    }
+}
+
+module.exports.color = {
+    async getAllColors(table_name) {
+        try {
+            var q = "SELECT * FROM " + table_name;
+            const data = await query(q);
+            return data;
+        } catch(err) {
+            return false;
+        }
     }
 }
