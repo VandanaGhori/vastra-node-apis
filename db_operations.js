@@ -1,5 +1,6 @@
 const { response } = require("express");
 const util = require('util');
+const { uploadImage } = require("./controller/product");
 let db = require("./db_config");
 
 const query = util.promisify(db.query).bind(db);
@@ -13,6 +14,16 @@ module.exports.product = {
         } catch (err) {
             return false;
         }
+    },
+    async uploadProductImage(table_name, imageFileName) {
+        // try {
+        //     var q = "Insert into " + table_name + " (email,password,firstName," +
+        //         "lastName,address,city,province,postalCode,avatarURL,type) Values (?)";
+        //     const rows = await query(q, [values]);
+        //     return rows
+        // } catch (err) {
+        //     return false;
+        // }
     }
 }
 

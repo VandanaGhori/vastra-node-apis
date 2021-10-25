@@ -5,6 +5,14 @@ dotenv.config();
 const port = 3000;
 app.use(express.json())
 
+// For image uploading
+const path = require('path')
+var fileUpload = require('express-fileupload');
+
+// add reference of dir
+app.use(express.static(path.join(__dirname, 'productImage')));
+app.use(fileUpload());
+
 var products = require("./controller/product.js");
 var user = require("./controller/user.js");
 var fashionDesigner = require("./controller/fashion_designer.js");
@@ -36,6 +44,11 @@ app.get('/product', function(req,res) {
     products.getAllProducts(req,res)
 })
 
+// Pending to implement
+app.post('/product', function(req,res){
+    products.createProduct(req,res)
+})
+
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
     products.uploadImage(req,res)
@@ -44,12 +57,6 @@ app.post('/upload', function(req,res){
 // --------------ProductSize---------------------
 app.get('/product/size/list', function(req,res) {
     productSize.getProductSizes(req,res)
-})
-
-
-// Pending to implement
-app.post('/product', function(req,res){
-    products.createProduct(req,res)
 })
 
 // -----------------ProductType------------
