@@ -5,14 +5,14 @@ let db = require("./db_config");
 const query = util.promisify(db.query).bind(db);
 
 module.exports.product = {
-    getAllData(table_name, callback) {
-        var q = "Select * from " + table_name + " Where isDeleted = 0";
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
-            }
-            callback(null, res);
-        })
+    async getAllProducts(table_name) {
+        try {
+            var q = "Select * from " + table_name + " Where isDeleted = 0";
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return false;
+        }
     }
 }
 
@@ -28,6 +28,20 @@ module.exports.productType = {
     }
 }
 
+module.exports.productSize = {
+    async getAllProductSizes(table_name, designerId, productTypeId) {
+        try {
+            var q = "SELECT brandSize FROM " + table_name + " where productId in " +
+            "(select productId from product where catalogueId in (SELECT catalogueId FROM catalogue" +
+                " where designerId = " + designerId + " ) and typeId = " + productTypeId + " )";
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return false;
+        }
+    }
+}
+
 module.exports.validate = {
     async validateToken(token) {
         try {
@@ -36,7 +50,7 @@ module.exports.validate = {
             const data = await query(q);
             return data[0];
         } catch (err) {
-            return err;
+            return false;
         }
     },
     getUserIdFromToken(token, callback) {
@@ -235,6 +249,46 @@ module.exports.color = {
             var q = "SELECT * FROM " + table_name;
             const data = await query(q);
             return data;
+        } catch(err) {
+            return false;
+        }
+    }
+}
+
+module.exports.material = {
+    async getAllMaterials(table_name) {
+        try {
+            var q = "SELECT * FROM " + table_name;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return false;
+        }
+    },
+    async isMaterialExist(table_name, materialName) {
+        try {
+            var q = "SELECT count(*) as noOfMaterialExist FROM " + table_name + " where material = '" + materialName + "'";
+            const data = await query(q);
+            return data[0];
+        } catch(err) {
+            return false;
+        }
+    },
+    async addMaterial(table_name, materialName) {
+        try {
+            var q = "Insert into " + table_name + " (material) Values ('" + materialName + "')";
+            console.log("Insert Query " + q);
+            const rows = await query(q);
+            return rows;
+        } catch (err) {
+            return false;
+        }
+    },
+    async getMaterialById(table_name, material_id) {
+        try {
+            var q = "SELECT * FROM " + table_name + " where id = " + material_id;
+            const data = await query(q);
+            return data[0];
         } catch(err) {
             return false;
         }

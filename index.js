@@ -7,10 +7,12 @@ app.use(express.json())
 
 var products = require("./controller/product.js");
 var user = require("./controller/user.js");
-var fashionDesigner = require("./controller/fashion_designer");
+var fashionDesigner = require("./controller/fashion_designer.js");
 var catalogue = require('./controller/catalogue.js');
 var color = require('./controller/color.js');
 var productType = require('./controller/product_type.js');
+var material = require('./controller/material.js');
+var productSize = require('./controller/product_size.js');
 const utils = require('./utils.js');
 
 // Creating routing
@@ -34,6 +36,18 @@ app.get('/product', function(req,res) {
     products.getAllProducts(req,res)
 })
 
+// ----------------UploadImage--------------------
+app.post('/upload', function(req,res){
+    products.uploadImage(req,res)
+})
+
+// --------------ProductSize---------------------
+app.get('/product/size/list', function(req,res) {
+    productSize.getProductSizes(req,res)
+})
+
+
+// Pending to implement
 app.post('/product', function(req,res){
     products.createProduct(req,res)
 })
@@ -41,6 +55,15 @@ app.post('/product', function(req,res){
 // -----------------ProductType------------
 app.get('/product/type/list', function(req,res){
     productType.getProductTypes(req,res)
+})
+
+// ----------------Material-------------
+app.get('/material/list', function(req,res) {
+    material.getMaterials(req,res)
+})
+
+app.post('/material', function(req,res){
+    material.createMaterial(req,res)
 })
 
 // -----------------Shopper/User----------------
