@@ -9,14 +9,14 @@ module.exports = {
             res.json(utils.sendResponse(true, 200, "All Materials", getMaterialsResponse));
             return;
         } else {
-            return res.json(utils.sendResponse(false, 500, "Opps!!", []));
+            return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
         }
     },
     createMaterial : async function(req,res) {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -26,8 +26,9 @@ module.exports = {
                 return;
             }
             let materialExist = await db_operations.material.isMaterialExist("material", input.material);
-            if (materialExist['noOfMaterialExist'] > 0) {
-                res.json(utils.sendResponse(false, 500, "Material is already exist!"));
+            //console.log("materialExist = " + materialExist['noOfMaterialExist']);
+            if (materialExist != false) {
+                res.json(utils.sendResponse(false, 500, "Material is already exist", materialExist));
                 return;
             }
 
@@ -36,15 +37,15 @@ module.exports = {
                 let getMaterialByIdResponse = await db_operations.material.getMaterialById("material", addMaterialResponse.insertId);
                 //console.log("Recently added material ID = " + addMaterialResponse.insertId);
                 if (getMaterialByIdResponse != false) {
-                    return res.json(utils.sendResponse(true, 200, "Catalogue created!", getMaterialByIdResponse));
+                    return res.json(utils.sendResponse(true, 200, "Catalogue created", getMaterialByIdResponse));
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
                 }
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
         } else {
-            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     }
 }

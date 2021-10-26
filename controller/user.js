@@ -65,13 +65,13 @@ module.exports = {
                         'sessionToken': token
                     }
                     //console.log(output)
-                    res.json(utils.sendResponse(true, 200, "User registered successfully!", output));
+                    res.json(utils.sendResponse(true, 200, "User registered successfully", output));
                     return;
                 }
             }
 
         }
-        return res.json(utils.sendResponse(false, 500, "Opps!!", []));
+        return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
     },
     login: async function (req, res) {
         input = req.body;
@@ -87,6 +87,8 @@ module.exports = {
 
         let loginResponse = await db_operations.user.checkLoginCredentials("user", loginCredentials);
 
+        //console.log("Login response " + loginResponse);
+        
         if (loginResponse != false) {
             let user_id = loginResponse['id'];
             let user_type = loginResponse['type'];
@@ -95,59 +97,62 @@ module.exports = {
                 let token = sessionResult;
                 if (user_type == 1) {
                     let shopperResponse = await db_operations.user.getShopperById(user_id);
+                    console.log("Shopper Response " + shopperResponse);
                     if (shopperResponse != false) {
                         let user = {
-                            'userId': shopperResponse.id,
-                            'email': shopperResponse.email,
-                            'firstName': shopperResponse.firstName,
-                            'lastName': shopperResponse.lastName,
-                            'address': shopperResponse.address,
-                            'city': shopperResponse.city,
-                            'province': shopperResponse.province,
-                            'postalCode': shopperResponse.postalCode,
-                            'avatarURL': shopperResponse.avatarURL ? shopperResponse.avatarURL : null,
-                            'type': shopperResponse.type
+                            'userId': shopperResponse['id'],
+                            'email': shopperResponse['email'],
+                            'firstName': shopperResponse['firstName'],
+                            'lastName': shopperResponse['lastName'],
+                            'address': shopperResponse['address'],
+                            'city': shopperResponse['city'],
+                            'province': shopperResponse['province'],
+                            'postalCode': shopperResponse['postalCode'],
+                            'avatarURL': shopperResponse['avatarURL'] ? shopperResponse['avatarURL'] : null,
+                            'type': shopperResponse['type']
                         }
                         let output = {
                             'user': user,
                             'sessionToken': token
                         }
-                        return res.json(utils.sendResponse(true, 200, "User loggedIn successfully!", output));
+                        return res.json(utils.sendResponse(true, 200, "User loggedIn successfully", output));
                     }
                 } else {
                     let designerResponse = await db_operations.fashionDesigner.getFashionDesignerById(user_id);
                     if (designerResponse != false) {
                         let designer = {
-                            'userId': designerResponse.userId,
-                            'email': designerResponse.email,
-                            'firstName': designerResponse.firstName,
-                            'lastName': designerResponse.lastName,
-                            'address': designerResponse.address,
-                            'city': designerResponse.city,
-                            'province': designerResponse.province,
-                            'postalCode': designerResponse.postalCode,
-                            'avatarURL': designerResponse.avatarURL ? designerResponse.avatarURL : null,
-                            'type': designerResponse.type,
-                            'id': designerResponse.designerId,
-                            'brandName': designerResponse.brandName,
-                            'tagline': designerResponse.tagline
+                            'userId': designerResponse['userId'],
+                            'email': designerResponse['email'],
+                            'firstName': designerResponse['firstName'],
+                            'lastName': designerResponse['lastName'],
+                            'address': designerResponse['address'],
+                            'city': designerResponse['city'],
+                            'province': designerResponse['province'],
+                            'postalCode': designerResponse['postalCode'],
+                            'avatarURL': designerResponse['avatarURL'] ? designerResponse['avatarURL'] : null,
+                            'type': designerResponse['type'],
+                            'id': designerResponse['designerId'],
+                            'brandName': designerResponse['brandName'],
+                            'tagline': designerResponse['tagline']
                         }
                         let output = {
                             'designer': designer,
                             'sessionToken': token
                         }
-                        return res.json(utils.sendResponse(true, 200, "Designer loggedIn successfully!", output));
+                        return res.json(utils.sendResponse(true, 200, "Designer loggedIn successfully", output));
                     }
                 }
+            } else {
+                return res.json(utils.sendResponse(false, 403, "Oops something went wrong."));        
             }
         }
-        return res.json(utils.sendResponse(false, 403, "Your session is expired!", []));
+        return res.json(utils.sendResponse(false, 403, "Incorrect username or password."));
     },
     updateShopper: async function (req, res) {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -171,12 +176,12 @@ module.exports = {
             var user_id = input.id;
             let updateUserResponse = await db_operations.user.updateUser("user", user, user_id);
             if (updateUserResponse != false) {
-                return res.json(utils.sendResponse(true, 200, "User Profile is updated successfully!"));
+                return res.json(utils.sendResponse(true, 200, "User Profile is updated successfully"));
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!", []));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
         } else {
-            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     }
 }

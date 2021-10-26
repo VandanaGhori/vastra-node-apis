@@ -32,9 +32,9 @@ module.exports = {
             for(var i = 0 ; i < getAllProductSizesResponse.length ; i++) {
                 sizesArray.push(getAllProductSizesResponse[i]['brandSize']);
             }
-            return res.json(utils.sendResponse(true, 200, "All the product sizes!", sizesArray));
+            return res.json(utils.sendResponse(true, 200, "All the product sizes", sizesArray));
         } else {
-            return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+            return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
         }
     }
 }

@@ -7,7 +7,7 @@ module.exports = {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -19,7 +19,7 @@ module.exports = {
             let catalogueExist = await db_operations.catalogue.isCatalogueExist("catalogue", input.name, input.designerId);
             //console.log("CatalogueExist = " + catalogueExist['noOfCatalogueExist']);
             if (catalogueExist != false) {
-                res.json(utils.sendResponse(true, 200, "Catalogue is already exist!", catalogueExist));
+                res.json(utils.sendResponse(true, 200, "Catalogue is already exist", catalogueExist));
                 return;
             }
 
@@ -32,22 +32,22 @@ module.exports = {
             if (addCatalogueResponse != false) {
                 let getCatalogueByIdResponse = await db_operations.catalogue.getCatalogueById("catalogue", addCatalogueResponse.insertId);
                 if (getCatalogueByIdResponse != false) {
-                    return res.json(utils.sendResponse(true, 200, "Catalogue created!", getCatalogueByIdResponse));
+                    return res.json(utils.sendResponse(true, 200, "Catalogue created", getCatalogueByIdResponse));
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
                 }
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!"));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
         } else {
-            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     },
     getCatalogues: async function (req, res) {
         input = req.query;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -63,7 +63,7 @@ module.exports = {
                 res.json(utils.sendResponse(true, 200, "List of Catalogues", getCataloguesResponse))
                 return;
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!", []));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
         }
     }

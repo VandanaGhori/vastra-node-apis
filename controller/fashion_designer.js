@@ -16,7 +16,7 @@ module.exports = {
         }
 
         let userExist = await db_operations.user.getUser("user", input.email)
-        console.log("ISUSerExist!!!!!!!!!!!!" + userExist);
+        //console.log("ISUSerExist!!!!!!!!!!!!" + userExist);
         if (userExist) {
             res.json(utils.sendResponse(false, 500, "You are already registered. Please Login."));
             return;
@@ -82,7 +82,7 @@ module.exports = {
                                 'sessionToken': token
                             }
                             console.log(output)
-                            res.json(utils.sendResponse(true, 200, "Fashion designer registered successfully!", output));
+                            res.json(utils.sendResponse(true, 200, "Fashion designer registered successfully", output));
                             return;
                         }
                     }
@@ -95,7 +95,7 @@ module.exports = {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -125,15 +125,15 @@ module.exports = {
             if (updateUserResponse != false) {
                 let updateDesignerResponse = await db_operations.fashionDesigner.updateFashionDesigner("designer", designer, user_id);
                 if(updateDesignerResponse != false) {
-                    return res.json(utils.sendResponse(true, 200, "Designer's Profile is updated successfully!"));
+                    return res.json(utils.sendResponse(true, 200, "Designer's Profile is updated successfully"));
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong!", []));    
+                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));    
                 }
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong!", []));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
         } else {
-            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     }
 }

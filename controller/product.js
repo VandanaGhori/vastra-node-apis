@@ -13,13 +13,13 @@ module.exports = {
             res.json(utils.sendResponse(false, 200, "All the Products", productResponse));
             return;
         }
-        return res.json(utils.sendResponse(false, 200, "Oops!", []));
+        return res.json(utils.sendResponse(false, 500, "Oops something went wrong"));
     },
     uploadImage: async function (req, res) {
         token = req.headers['token'];
 
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"));
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"));
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
@@ -27,7 +27,7 @@ module.exports = {
         if (validateTokenResult != false) {
             let success = false;
             if (!req.files) {
-                return res.json(utils.sendResponse(false, 500, "No files were uploaded!"));
+                return res.json(utils.sendResponse(false, 500, "No files were uploaded"));
             }
 
             let imagesMimeRegex = new RegExp("image/(.*)");
@@ -50,19 +50,19 @@ module.exports = {
                         let uploadedFilePath = process.cwd() + "\\Images\\" + nameExtra + file.name;
                         //console.log("Path " + uploadedFilePath);
                         let result = uploadedFilePath.replace(/\\/g, '\/');
-                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file!", result));
+                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file", result));
                     } else {
-                        return res.json(utils.sendResponse(false, 500, "File does not store!"));
+                        return res.json(utils.sendResponse(false, 500, "File does not store"));
                     }
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Oops! Something went wrong!"));
+                    return res.json(utils.sendResponse(false, 500, "Oops! Something went wrong"));
                 }
 
             } else {
-                return res.json(utils.sendResponse(false, 500, "Only Image files are allowed!"));
+                return res.json(utils.sendResponse(false, 500, "Only Image files are allowed"));
             }
         } else {
-            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     },
     createProduct: async function (req, res) {

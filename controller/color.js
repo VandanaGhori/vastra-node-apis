@@ -9,7 +9,7 @@ module.exports = {
             res.json(utils.sendResponse(true, 200, "All Colors", getColorsResponse));
             return;
         } else {
-            return res.json(utils.sendResponse(false, 500, "Opps!!", []));
+            return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
         }
     }
 }
