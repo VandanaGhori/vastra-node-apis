@@ -10,7 +10,7 @@ const path = require('path')
 var fileUpload = require('express-fileupload');
 
 // add reference of dir
-app.use(express.static(path.join(__dirname, 'productImage')));
+app.use(express.static(path.join(__dirname, 'Images')));
 app.use(fileUpload());
 
 var products = require("./controller/product.js");

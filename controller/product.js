@@ -1,7 +1,10 @@
 const db_operations = require("../db_operations");
 var utils = require('../utils');
-var crypto = require('crypto');
+var crypto = require('crypto'); 
 const fs = require('fs');
+const fileUpload = require("express-fileupload");
+const path = require('path');
+const { json } = require("body-parser");
 
 module.exports = {
     getAllProducts: async function (req, res) {
@@ -16,55 +19,50 @@ module.exports = {
         token = req.headers['token'];
 
         if (token == null) {
-            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"))
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization!"));
         }
 
         let validateTokenResult = await db_operations.validate.validateToken(token);
-        if (validateTokenResult != false) {
-            // if (input.material == null) {
-            //     res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
-            //     return;
-            // }
-            
-            let success = false;
 
+        if (validateTokenResult != false) {
+            let success = false;
             if (!req.files) {
                 return res.json(utils.sendResponse(false, 500, "No files were uploaded!"));
             }
 
-            const imagesMimeRegex = new RegExp("image/(.*)");
-            if (req.files) {
-                let file = req.files.file;
-                console.log("File " + file.name);
-                //if(file.mimetype == "image/jpeg" || file.mimetype == 'image/png')
-                if (imagesMimeRegex.test(file.mimetype)) {
-                    var nameExtra = crypto.randomBytes(15).toString('hex');
-                    let fileUpload = `./productImage/` + nameExtra + file.name;
-                    try {
-                        await file.mv(fileUpload);
-                        success = true;
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    if(fs.existsSync(fileUpload)) {
-                        //console.log("File path Exist into local folder.");
+            let imagesMimeRegex = new RegExp("image/(.*)");
 
-                        // Store image into the database and return the file path in json response
-                        let uploadFileResponse = await db_operations.product.uploadProductImage("product", fileUpload);
-                        if(uploadFileResponse != false) {
-                            
-                        }
-                    } else {
-                        success = false;
-                    }
+            let file = req.files.file;
+            
+            if (imagesMimeRegex.test(file.mimetype)) {
+                var nameExtra = crypto.randomBytes(15).toString('hex');
+                //path generation for local stroed image file
+                let fileUpload = `./Images/` + nameExtra + file.name;
+                try {
+                    await file.mv(fileUpload);
+                    success = true;
+                } catch (err) {
+                    console.log(err);
                 }
-                if (success)
-                    return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file!", success));
-                else
-                    return res.json(utils.sendResponse(false, 500, "User failed to upload file!", success));
+             
+                if (success) {
+                    if (fs.existsSync(fileUpload)) {
+                        let uploadedFilePath = process.cwd() + "\\Images\\" + nameExtra + file.name;
+                        //console.log("Path " + uploadedFilePath);
+                        let result = uploadedFilePath.replace(/\\/g, '\/');
+                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file!", result));
+                    } else {
+                        return res.json(utils.sendResponse(false, 500, "File does not store!"));
+                    }
+                } else {
+                    return res.json(utils.sendResponse(false, 500, "Oops! Something went wrong!"));
+                }
+
             } else {
-                return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
+                return res.json(utils.sendResponse(false, 500, "Only Image files are allowed!"));
             }
+        } else {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
         }
     },
     createProduct: async function (req, res) {
