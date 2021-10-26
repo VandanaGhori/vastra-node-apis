@@ -23,6 +23,7 @@ module.exports.productType = {
             const data = await query(q);
             return data;
         } catch(err) {
+            console.log(err)
             return false;
         }
     }
@@ -224,7 +225,7 @@ module.exports.catalogue = {
     },
     async isCatalogueExist(table_name, catalogueName, designerId) {
         try {
-            var q = "SELECT count(*) as noOfCatalogueExist FROM " + table_name + " where name = '" + catalogueName + "' and designerId = " + designerId;
+            var q = "SELECT * FROM " + table_name + " where name = '" + catalogueName + "' and designerId = " + designerId;
             const data = await query(q);
             return data[0];
         } catch(err) {
