@@ -11,5 +11,8 @@ module.exports = {
         } else {
             return res.json(utils.sendResponse(false, 500, "No Product Type Found"));
         }
+    },
+    getDesignerProductsByTypes: async function (req,res) {
+        let getDesignerProductsByTypesResponse = await db_operations.productType.getDesignerProductsByTypes();
     }
 }

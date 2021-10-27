@@ -64,6 +64,10 @@ app.get('/product/type/list', function(req,res){
     productType.getProductTypes(req,res)
 })
 
+app.get("/product/basiclist/fd/type", function(req,res){
+    productType.getDesignerProductsByTypes(req,res)
+})
+
 // ----------------Material-------------
 app.get('/material/list', function(req,res) {
     material.getMaterials(req,res)
@@ -98,6 +102,18 @@ app.put('/fd/user', function(req,res){
 // -----------------Color------------------------
 app.get('/color/list', function(req,res){
     color.getColors(req,res)
+})
+
+app.post('/product/color', function(req,res){
+    color.addProductColor(req,res)
+})
+
+app.put('/product/color', function(req,res){
+    color.updateProductColor(req,res)
+})
+
+app.delete('/product/color', function(req,res){
+    color.deleteProductColor(req,res)
 })
 
 app.listen(port, () => {

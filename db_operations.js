@@ -26,6 +26,13 @@ module.exports.productType = {
             //console.log(err)
             return false;
         }
+    },
+    async getDesignerProductsByTypes() {
+        try {
+            var q = ""
+        } catch (err) {
+
+        }
     }
 }
 
@@ -238,6 +245,7 @@ module.exports.catalogue = {
         try {
             var q = "SELECT * FROM " + table_name + " where name = '" + catalogueName + "' and designerId = " + designerId;
             const data = await query(q);
+            //console.log(data);
             return data;
         } catch (err) {
             return [];
@@ -261,6 +269,33 @@ module.exports.color = {
             var q = "SELECT * FROM " + table_name;
             const data = await query(q);
             return data;
+        } catch (err) {
+            return false;
+        }
+    },
+    async addProductColor(table_name, values) {
+        try {
+            var q = "Insert into " + table_name + " values (productId, prominentColorId, secondaryColorId, thirdColorId) (?)";
+            const row = await query(q, [values]);
+            return row;
+        } catch (err) {
+            return false;
+        }
+    },
+    async updateProductColor(table_name, values, productColorId) {
+        try {
+            var q = "Update " + table_name + " set prominentColorId = ?, secondaryColorId = ? thirdColorId = ? where productColorId = " + productColorId;
+            const row = await query(q, [values.prominentColorId, values.secondaryColorId, values.thirdColorId]);
+            return row;
+        } catch (err) {
+            return false;
+        }
+    }, 
+    async deleteProductColor(table_name, productColorId) {
+        try {
+            var q = "Delete from " + table_name + " where productColorId = " + productColorId;
+            const row = await query(q);
+            return row;
         } catch (err) {
             return false;
         }

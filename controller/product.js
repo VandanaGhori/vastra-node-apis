@@ -27,7 +27,7 @@ module.exports = {
         if (validateTokenResult != false) {
             let success = false;
             if (!req.files) {
-                return res.json(utils.sendResponse(false, 500, "No files were uploaded"));
+                return res.json(utils.sendResponse(false, 500, "File is not uploaded"));
             }
 
             let imagesMimeRegex = new RegExp("image/(.*)");
@@ -48,11 +48,13 @@ module.exports = {
                 if (success) {
                     if (fs.existsSync(fileUpload)) {
                         let uploadedFilePath = process.cwd() + "\\Images\\" + nameExtra + file.name;
-                        //console.log("Path " + uploadedFilePath);
                         let result = uploadedFilePath.replace(/\\/g, '\/');
-                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file", result));
+                        
+                        //var fullUrl = req.protocol + '://' + req.get('host') + "/" + nameExtra + file.name;
+
+                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file", nameExtra + file.name));
                     } else {
-                        return res.json(utils.sendResponse(false, 500, "File does not store"));
+                        return res.json(utils.sendResponse(false, 500, "File is not successfully uploaded."));
                     }
                 } else {
                     return res.json(utils.sendResponse(false, 500, "Oops! Something went wrong"));
