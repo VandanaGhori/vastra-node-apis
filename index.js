@@ -10,7 +10,7 @@ const path = require('path')
 var fileUpload = require('express-fileupload');
 
 // add reference of dir
-app.use(express.static(path.join(__dirname, 'Images')));
+app.use(express.static(path.join(__dirname, 'images')));
 app.use(fileUpload());
 
 var products = require("./controller/product.js");
@@ -21,6 +21,7 @@ var color = require('./controller/color.js');
 var productType = require('./controller/product_type.js');
 var material = require('./controller/material.js');
 var productSize = require('./controller/product_size.js');
+var image = require('./controller/uploadImage.js');
 const utils = require('./utils.js');
 
 // Creating routing
@@ -51,7 +52,7 @@ app.post('/product', function(req,res){
 
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
-    products.uploadImage(req,res)
+    image.uploadImage(req,res)
 })
 
 // --------------ProductSize---------------------
