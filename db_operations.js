@@ -238,9 +238,9 @@ module.exports.catalogue = {
         try {
             var q = "SELECT * FROM " + table_name + " where name = '" + catalogueName + "' and designerId = " + designerId;
             const data = await query(q);
-            return data[0];
+            return data;
         } catch (err) {
-            return false;
+            return [];
         }
     },
     async getAllCatalogue(table_name, designerId) {

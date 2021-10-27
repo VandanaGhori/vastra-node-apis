@@ -17,9 +17,8 @@ module.exports = {
                 return;
             }
             let catalogueExist = await db_operations.catalogue.isCatalogueExist("catalogue", input.name, input.designerId);
-            //console.log("CatalogueExist = " + catalogueExist['noOfCatalogueExist']);
-            if (catalogueExist != false) {
-                res.json(utils.sendResponse(true, 200, "Catalogue is already exist", catalogueExist));
+            if (catalogueExist.length > 0) {
+                res.json(utils.sendResponse(true, 200, "Catalogue is already exist", catalogueExist[0]));
                 return;
             }
 
