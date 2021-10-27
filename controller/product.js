@@ -35,9 +35,9 @@ module.exports = {
             let file = req.files.file;
             
             if (imagesMimeRegex.test(file.mimetype)) {
-                var nameExtra = crypto.randomBytes(15).toString('hex');
+                var fileName = crypto.randomBytes(15).toString('hex');
                 //path generation for local stroed image file
-                let fileUpload = `./Images/` + nameExtra + file.name;
+                let fileUpload = `./Images/` + fileName;
                 try {
                     await file.mv(fileUpload);
                     success = true;
@@ -47,12 +47,7 @@ module.exports = {
              
                 if (success) {
                     if (fs.existsSync(fileUpload)) {
-                        let uploadedFilePath = process.cwd() + "\\Images\\" + nameExtra + file.name;
-                        let result = uploadedFilePath.replace(/\\/g, '\/');
-                        
-                        //var fullUrl = req.protocol + '://' + req.get('host') + "/" + nameExtra + file.name;
-
-                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file", nameExtra + file.name));
+                        return res.json(utils.sendResponse(true, 200, "User has successfully uploaded file", fileName));
                     } else {
                         return res.json(utils.sendResponse(false, 500, "File is not successfully uploaded."));
                     }
