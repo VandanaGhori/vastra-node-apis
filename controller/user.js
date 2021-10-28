@@ -85,6 +85,13 @@ module.exports = {
             'password': md5(input.password)
         }
 
+        let isEmailExist = await db_operations.user.isEmailExist("user", input.email);
+
+        if(isEmailExist == false) {
+            res.json(utils.sendResponse(true, 200, "Email is not exist!"));
+            return;
+        }
+        //console.log("ISEmailExist " + isEmailExist);
         let loginResponse = await db_operations.user.checkLoginCredentials("user", loginCredentials);
 
         //console.log("Login response " + loginResponse);
@@ -97,7 +104,7 @@ module.exports = {
                 let token = sessionResult;
                 if (user_type == 1) {
                     let shopperResponse = await db_operations.user.getShopperById(user_id);
-                    console.log("Shopper Response " + shopperResponse);
+                    //console.log("Shopper Response " + shopperResponse);
                     if (shopperResponse != false) {
                         let user = {
                             'userId': shopperResponse['id'],

@@ -65,6 +65,8 @@ module.exports = {
             } else {
                 return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
+        } else {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     }
 }

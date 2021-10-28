@@ -27,26 +27,48 @@ module.exports.productType = {
             return false;
         }
     },
-    async getDesignerProductsByTypes() {
+    async getDesignerProductsByTypes(designerId, productTypeId) {
         try {
-            var q = ""
+            var q = "SELECT p.id, d.brandName, CONCAT(u.firstName, ' ', u.lastName) as desinerName, " +
+            "typeId, title, images, price, totalLikes, overallRating FROM `product` as p, designer as d, " + 
+            "user as u where d.userId = u.id and typeId = " + productTypeId + " and catalogueId " +
+            " in ( SELECT catalogueId from catalogue as c) and d.id = " + designerId;
+            const data = await query(q);
+            if(data.length > 0) {
+                return data;
+            }
         } catch (err) {
-
+            return false;
         }
+        return [];
     }
 }
 
 module.exports.productSize = {
-    async getAllProductSizes(table_name, designerId, productTypeId) {
+    // async getAllProductSizes(table_name, designerId, productTypeId) {
+    //     try {
+    //         var q = "SELECT brandSize FROM " + table_name + " where productId in " +
+    //             "(select productId from product where catalogueId in (SELECT catalogueId FROM catalogue" +
+    //             " where designerId = " + designerId + " ) and typeId = " + productTypeId + " )";
+    //         const data = await query(q);
+    //         return data;
+    //     } catch (err) {
+    //         return false;
+    //     }
+    // }
+    async getAllProductSizes(table_name, designerId, productId) {
         try {
-            var q = "SELECT brandSize FROM " + table_name + " where productId in " +
-                "(select productId from product where catalogueId in (SELECT catalogueId FROM catalogue" +
-                " where designerId = " + designerId + " ) and typeId = " + productTypeId + " )";
+            var q = "SELECT ps.* FROM " + table_name + " as ps, product as p WHERE p.id = ps.productId " +
+            " and p.id = " + productId + " and p.designerId = " + designerId;
+            console.log("Query " + q);
             const data = await query(q);
-            return data;
+            if(data.length > 0) {
+                return data;
+            }
         } catch (err) {
             return false;
         }
+        return [];
     }
 }
 
@@ -161,6 +183,17 @@ module.exports.user = {
         } catch (err) {
             return false;
         }
+    },
+    async isEmailExist(table_name, email) {
+        try {
+            var q = "Select * from " + table_name + " where email = '" + email + "'";
+            const data = await query(q);
+            if(data.length > 0) {
+                return data
+            }
+        } catch (err) {
+        }
+        return false;
     }
 }
 
@@ -268,10 +301,14 @@ module.exports.color = {
         try {
             var q = "SELECT * FROM " + table_name;
             const data = await query(q);
-            return data;
+            if(data.length > 0)
+            {
+                return data;
+            }
         } catch (err) {
             return false;
         }
+        return [];
     },
     async addProductColor(table_name, values) {
         try {

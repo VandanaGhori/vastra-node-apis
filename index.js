@@ -56,9 +56,15 @@ app.post('/upload', function(req,res){
 })
 
 // --------------ProductSize---------------------
+// app.get('/product/size/list', function(req,res) {
+//     productSize.getProductSizes(req,res)
+// })
+
 app.get('/product/size/list', function(req,res) {
     productSize.getProductSizes(req,res)
 })
+
+
 
 // -----------------ProductType------------
 app.get('/product/type/list', function(req,res){
