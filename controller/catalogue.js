@@ -34,10 +34,10 @@ module.exports = {
                 if (getCatalogueByIdResponse != false) {
                     return res.json(utils.sendResponse(true, 200, "Catalogue created", getCatalogueByIdResponse));
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
+                    return res.json(utils.sendResponse(false, 500, "Catalogue does not found."));
                 }
             } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
+                return res.json(utils.sendResponse(false, 500, "Opps something went wrong at catalogue creation."));
             }
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));

@@ -312,25 +312,38 @@ module.exports.color = {
     },
     async addProductColor(table_name, values) {
         try {
-            var q = "Insert into " + table_name + " values (productId, prominentColorId, secondaryColorId, thirdColorId) (?)";
+            var q = "Insert into " + table_name + " (productId, prominentColorId, secondaryColorId, thirdColorId) values (?)";
             const row = await query(q, [values]);
+            //console.log("Response " + JSON.stringify(row));
             return row;
         } catch (err) {
             return false;
         }
     },
-    async updateProductColor(table_name, values, productColorId) {
+    async getProductColorById(table_name, id) {
         try {
-            var q = "Update " + table_name + " set prominentColorId = ?, secondaryColorId = ? thirdColorId = ? where productColorId = " + productColorId;
-            const row = await query(q, [values.prominentColorId, values.secondaryColorId, values.thirdColorId]);
-            return row;
+            var q = "SELECT * FROM " + table_name + " where id = " + id;
+            const data = await query(q);
+            return data[0];
         } catch (err) {
             return false;
         }
-    }, 
-    async deleteProductColor(table_name, productColorId) {
+    },
+    async updateProductColor(table_name, values, id, productId) {
         try {
-            var q = "Delete from " + table_name + " where productColorId = " + productColorId;
+            var q = "Update " + table_name + " set prominentColorId = ?, secondaryColorId = ?, thirdColorId = ? where id = " + 
+            id + " and productId = " + productId; 
+            const row = await query(q, [values.prominentColorId, values.secondaryColorId, values.thirdColorId]);
+            //console.log("Response " + JSON.stringify(row));
+            return row;
+        } catch (err) {
+            //console.log("Error " + JSON.stringify(err));
+            return false;
+        }
+    }, 
+    async deleteProductColor(table_name, id) {
+        try {
+            var q = "Delete from " + table_name + " where id = " + id;
             const row = await query(q);
             return row;
         } catch (err) {
