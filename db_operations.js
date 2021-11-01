@@ -78,10 +78,13 @@ module.exports.validate = {
             //var q = "Select count(sessionToken) as sessionToken from login where sessionToken = '" + token + "'";
             var q = "Select * from login where sessionToken = '" + token + "'";
             const data = await query(q);
-            return data[0];
+            if(data.length > 0) {
+                return data[0];
+            }
         } catch (err) {
             return false;
         }
+        return false;
     },
     getUserIdFromToken(token, callback) {
         var q = "Select userId from login where sessionToken = '" + token + "'";
@@ -176,10 +179,19 @@ module.exports.user = {
     },
     async deleteSession(table_name, user_id) {
         try {
-            var q = "Delete from " + table_name + " Where userId = " + user_id;
+            var q = "Delete from " + table_name + " where userId = " + user_id;
             const rows = await query(q);
            // console.log("Delete record " + rows)
-            return rows
+            return rows;
+        } catch (err) {
+            return false;
+        }
+    },
+    async deleteSessionToken(table_name, token) {
+        try {
+            var q = "Delete from " + table_name + " where sessionToken = '" + token + "'";
+            const rows = await query(q);
+            return rows;
         } catch (err) {
             return false;
         }
@@ -311,6 +323,7 @@ module.exports.color = {
         return [];
     },
     async addProductColor(table_name, values) {
+       // console.log("Values = " + values);
         try {
             var q = "Insert into " + table_name + " (productId, prominentColorId, secondaryColorId, thirdColorId) values (?)";
             const row = await query(q, [values]);
@@ -324,10 +337,24 @@ module.exports.color = {
         try {
             var q = "SELECT * FROM " + table_name + " where id = " + id;
             const data = await query(q);
-            return data[0];
+            if(data.length > 0) 
+                return data[0];
         } catch (err) {
             return false;
         }
+        return false;
+    },
+    async getUpdatedProductColorById(table_name, id, product_id) {
+        try {
+            var q = "SELECT * FROM " + table_name + " where id = " + id + " and productId = " + product_id;
+            const data = await query(q);
+            if(data.length > 0) {
+                return data[0];
+            }
+        } catch (err) {
+            return false;
+        }
+        return false;
     },
     async updateProductColor(table_name, values, id, productId) {
         try {
@@ -391,4 +418,36 @@ module.exports.material = {
             return false;
         }
     }
+}
+
+module.exports.productInventory = {
+    async addProductInventories(table_name, inventoryValues) {
+        try {
+            var q = "Insert into " + table_name + " (productId, productSizeId, productColorId, quantityAvailable) values (?)";
+            
+            // convert each element of an array to object then insert it into the database
+            await inventoryValues.forEach(element => {
+                query(q, [Object.values(element)]);
+            });
+
+            return true;           
+        } catch (err) {
+            //console.log("Error = " + err);
+            return false;
+        }
+    },
+     async updateProductInventories(table_name, inventoryValues) {
+         try {
+            var q = "Update " + table_name + " set productSizeId = ?, productColorId = ?, quantityAvailable = ? Where id = ? and productId = ?"; 
+
+            // Pass individual element as a replacement of ? in query... No need to convert into array of elements
+            await inventoryValues.forEach(element => {
+                query(q, [element.productSizeId,element.productColorId,element.quantityAvailable,element.id,element.productId]);
+            })
+            
+            return true;
+        } catch (err) {
+             return false;
+         }
+     }
 }

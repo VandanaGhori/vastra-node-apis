@@ -73,9 +73,9 @@ module.exports = {
             ("productcolor", updateProductColor, input.id, input.productId);
             //console.log("Update ProductColor Repsonse = " + JSON.stringify(updateProductColorResponse));
             if(updateProductColorResponse != false) {
-                let getProductColorByIdResponse = await db_operations.color.getProductColorById("productcolor", input.id);
+                let getProductColorByIdResponse = await db_operations.color.getUpdatedProductColorById("productcolor", input.id, input.productId);
                 if(getProductColorByIdResponse == false) {
-                    return res.json(utils.sendResponse(false, 500, "Product color is not updated."));
+                    return res.json(utils.sendResponse(false, 500, "Product color does not updated."));
                 }
                 return res.json(utils.sendResponse(true, 200, "Product color is updated.", getProductColorByIdResponse));
             } else {

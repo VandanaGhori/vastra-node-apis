@@ -88,7 +88,7 @@ module.exports = {
         let isEmailExist = await db_operations.user.isEmailExist("user", input.email);
 
         if(isEmailExist == false) {
-            res.json(utils.sendResponse(true, 200, "Email is not exist!"));
+            res.json(utils.sendResponse(true, 200, "Email is unique!"));
             return;
         }
         //console.log("ISEmailExist " + isEmailExist);
@@ -154,6 +154,23 @@ module.exports = {
             }
         }
         return res.json(utils.sendResponse(false, 403, "Incorrect username or password."));
+    },
+    logout: async function (req, res) {
+        token = req.headers['token'];
+
+        if(token == null) {
+            res.json(utils.sendResponse(false, 500, "Token is required for logout."))
+            return;
+        }
+
+        let logoutResponse = db_operations.user.deleteSessionToken("login", token);
+        if(logoutResponse) {
+            res.json(utils.sendResponse(true, 200, "Logout successfully."))
+            return;
+        } else {
+            res.json(utils.sendResponse(false, 500, "Something went wrong at logout."))
+            return;
+        }
     },
     updateShopper: async function (req, res) {
         input = req.body;

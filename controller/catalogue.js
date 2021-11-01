@@ -57,6 +57,7 @@ module.exports = {
                 res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
                 return;
             }
+
             let getCataloguesResponse = await db_operations.catalogue.getAllCatalogue("catalogue", input.designerId);
             if (getCataloguesResponse != false) {
                 //console.log("getCataloguesResponse " + getCataloguesResponse.length);
@@ -65,6 +66,7 @@ module.exports = {
             } else {
                 return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
             }
+            
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }

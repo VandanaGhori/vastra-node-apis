@@ -15,6 +15,7 @@ app.use(fileUpload());
 
 var products = require("./controller/product.js");
 var user = require("./controller/user.js");
+var productInventory = require("./controller/product_inventory.js");
 var fashionDesigner = require("./controller/fashion_designer.js");
 var catalogue = require('./controller/catalogue.js');
 var color = require('./controller/color.js');
@@ -87,8 +88,14 @@ app.post('/user', function(req,res) {
     user.addNewUser(req,res)
 })
 
+// -----------------Login---------------------------
 app.post('/login', function(req,res) {
     user.login(req,res)
+})
+
+// ------------------Logout-------------------------
+app.delete('/logout', function(req,res) {
+    user.logout(req,res)
 })
 
 app.put('/user', function(req,res){
@@ -119,6 +126,15 @@ app.put('/product/color', function(req,res){
 
 app.delete('/product/color', function(req,res){
     color.deleteProductColor(req,res)
+})
+
+// ------------------ProductInventory------------------
+app.post('/product/inventory/list' , function(req,res){
+    productInventory.addProductInventories(req,res)
+})
+
+app.put('/product/inventory/list' , function(req,res){
+    productInventory.updateProductInventories(req,res)
 })
 
 app.listen(port, () => {

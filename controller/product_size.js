@@ -50,7 +50,6 @@ module.exports = {
                 res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
                 return;
             }
-
         }  else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized!"));
         }
