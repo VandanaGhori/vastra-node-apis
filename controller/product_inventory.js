@@ -18,7 +18,9 @@ module.exports = {
                 return;
             }
 
-            let addProductInventoriesResponse = db_operations.productInventory.addProductInventories("productinventory", input);
+            console.log(input)
+
+            let addProductInventoriesResponse = await db_operations.productInventory.addProductInventories("productinventory", input);
 
             if (addProductInventoriesResponse != false) {
                 res.json(utils.sendResponse(true, 200, "Inventories inserted successfully."))

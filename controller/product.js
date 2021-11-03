@@ -124,6 +124,8 @@ module.exports = {
         }
         insertedProduct.sizes = await db_operations.productSizes.getAllProductSizes(productId);
 
+        console.log(insertedProduct)
+
         return res.json(utils.sendResponse(true, 200, "Product is added", insertedProduct));
     }
 };

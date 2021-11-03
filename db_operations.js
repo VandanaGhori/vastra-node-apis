@@ -647,7 +647,7 @@ module.exports.productInventory = {
             // convert each element of an array to object then insert it into the database
             await inventoryValues.forEach(element => {
                 let inventory = {
-                    'productId': product_id,
+                    'productId': element.productId,
                     'productSizeId': element.productSizeId,
                     'productColorId': element.productColorId,
                     'quantityAvailable': element.quantityAvailable
