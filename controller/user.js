@@ -88,7 +88,7 @@ module.exports = {
         let isEmailExist = await db_operations.user.isEmailExist("user", input.email);
 
         if(isEmailExist == false) {
-            res.json(utils.sendResponse(true, 200, "Email is unique!"));
+            res.json(utils.sendResponse(false, 500, "Email does not exist!"));
             return;
         }
         //console.log("ISEmailExist " + isEmailExist);
@@ -150,7 +150,7 @@ module.exports = {
                     }
                 }
             } else {
-                return res.json(utils.sendResponse(false, 403, "Oops something went wrong."));        
+                return res.json(utils.sendResponse(false, 500, "Oops something went wrong with updating session."));        
             }
         }
         return res.json(utils.sendResponse(false, 403, "Incorrect username or password."));
