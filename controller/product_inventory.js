@@ -18,8 +18,6 @@ module.exports = {
                 return;
             }
 
-            console.log(input)
-
             let addProductInventoriesResponse = await db_operations.productInventory.addProductInventories("productinventory", input);
 
             if (addProductInventoriesResponse != false) {
