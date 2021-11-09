@@ -58,15 +58,16 @@ module.exports = {
                 return;
             }
 
-            let getCataloguesResponse = await db_operations.catalogue.getAllCatalogue("catalogue", input.designerId);
-            if (getCataloguesResponse != false) {
-                //console.log("getCataloguesResponse " + getCataloguesResponse.length);
-                res.json(utils.sendResponse(true, 200, "List of Catalogues", getCataloguesResponse))
-                return;
-            } else {
-                return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
+            let catalogues = await db_operations.catalogue.getAllCatalogue("catalogue", input.designerId);
+            if (catalogues.length > 0) {
+                await Promise.all(catalogues.map(async (element) => {
+                    let products = await db_operations.product.getDesignerFewProducts(input.designerId, element.id);
+                    if (products != false && products != undefined) {
+                        element.products = products;
+                    }
+                }))
             }
-            
+            res.json(utils.sendResponse(true, 200, "List of Catalogues", catalogues))
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }

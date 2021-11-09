@@ -15,6 +15,23 @@ module.exports.product = {
             return false;
         }
     },
+    async getDesignerFewProducts(designerId, catalogueId) {
+        try {
+            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overallRating, " +
+                "d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName " +
+                "from product as p, designer d, user as u " +
+                "Where p.designerId = d.id AND d.userId = u.id " +
+                "AND p.isDeleted = 0 AND p.designerId = " + designerId + " AND p.catalogueId = " + catalogueId +
+                " Limit 5";
+            const data = await query(q);
+            data.map(async (element) => {
+                element.images = JSON.parse(element.images)
+            })
+            return data;
+        } catch (err) {
+            return false;
+        }
+    },
     async addProduct(values) {
         try {
             var q = "Insert into product (designerId, catalogueId, typeId, title, description, images, price, " +
@@ -69,7 +86,7 @@ module.exports.productType = {
     },
     async getDesignerProductsByTypes(designerId, productTypeId) {
         try {
-            var q = "SELECT p.id, d.brandName, CONCAT(u.firstName, ' ', u.lastName) as desinerName, " +
+            var q = "SELECT p.id, d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
                 "typeId, title, images, price, totalLikes, overallRating FROM `product` as p, designer as d, " +
                 "user as u where d.userId = u.id and typeId = " + productTypeId + " and catalogueId " +
                 " in ( SELECT catalogueId from catalogue as c) and d.id = " + designerId;
@@ -340,10 +357,9 @@ module.exports.catalogue = {
         try {
             var q = "SELECT * FROM " + table_name + " where designerId = " + designerId;
             const data = await query(q);
-            //console.log("Data " + data.length);
             return data;
         } catch (err) {
-            return false;
+            return [];
         }
     }
 }
