@@ -46,9 +46,12 @@ app.get('/product', function(req,res) {
     products.getAllProducts(req,res)
 })
 
-// Pending to implement
 app.post('/product', function(req,res){
     products.createProduct(req,res)
+})
+
+app.get('/product/exist/fd', function(req,res) {
+    products.isAnyProductExistForDesigner(req,res)
 })
 
 // ----------------UploadImage--------------------

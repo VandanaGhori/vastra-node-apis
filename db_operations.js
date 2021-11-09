@@ -35,6 +35,15 @@ module.exports.product = {
             return null;
         }
     },
+    async getProductsCountByDesignerId(designer_id) {
+        try {
+            var q = "SELECT COUNT(*) AS totalProducts FROM product where designerId = " + designer_id + " AND isDeleted = 0";
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return 0;
+        }
+    },
     async deleteProduct(product_id) {
         try {
             var q = "Delete from product where id = " + product_id;

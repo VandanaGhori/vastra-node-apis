@@ -127,5 +127,26 @@ module.exports = {
         console.log(insertedProduct)
 
         return res.json(utils.sendResponse(true, 200, "Product is added", insertedProduct));
+    },
+    isAnyProductExistForDesigner: async function (req, res) {
+        input = req.query;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.designerId == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        let productsResponse = await db_operations.product.getProductsCountByDesignerId(input.designerId);
+        let isAnyProductsExist = productsResponse[0].totalProducts > 0
+        res.json(utils.sendResponse(true, 200, "", isAnyProductsExist));
+        return;
     }
 };
