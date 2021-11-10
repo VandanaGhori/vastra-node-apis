@@ -62,6 +62,10 @@ app.delete('/product', function(req,res){
     products.deleteProduct(req,res)
 })
 
+app.get('/product/info', function(req,res) {
+    products.getProduct(req,res)
+})
+
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
     image.uploadImage(req,res)

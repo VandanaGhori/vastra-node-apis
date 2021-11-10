@@ -61,7 +61,11 @@ module.exports.product = {
     },
     async getProductById(product_id) {
         try {
-            var q = "SELECT * FROM product where id = " + product_id;
+            var q = "SELECT p.*, " +
+            "d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName " +
+            "from product as p, designer d, user as u " +
+            "Where p.designerId = d.id AND d.userId = u.id AND " + 
+            "p.id = " + product_id;
             const data = await query(q);
             return data[0];
         } catch (err) {
@@ -100,6 +104,19 @@ module.exports.productType = {
             //console.log(err)
             return false;
         }
+    },
+    async getProductType(id) {
+        try {
+            var q = "SELECT * FROM producttype WHERE id = " + id;
+            const data = await query(q);
+            let row = data[0];
+            if(row != undefined){
+                return row;
+            }
+        } catch (err) {
+            //console.log(err)
+        }
+        return null;
     },
     async getDesignerProductsByTypes(designerId, productTypeId) {
         try {
@@ -524,6 +541,17 @@ module.exports.productMaterials = {
             console.log("Error = " + err);
             return false;
         }
+    },
+    async getProductMaterials(productId) {
+        try {
+            var q = "SELECT pm.*, m.material as materialName "+
+            "FROM productmaterial as pm, material as m "+
+            "WHERE pm.materialId = m.id AND productId = " + productId;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return [];
+        }
     }
 }
 
@@ -544,6 +572,15 @@ module.exports.productOccasion = {
         } catch (err) {
             console.log("Error = " + err);
             return false;
+        }
+    },
+    async getProductOccasions(productId) {
+        try {
+            var q = "SELECT * FROM productoccasion WHERE productId = " + productId;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return [];
         }
     }
 }
@@ -566,6 +603,15 @@ module.exports.productSeasons = {
         } catch (err) {
             console.log("Error = " + err);
             return false;
+        }
+    },
+    async getProductSeasons(productId) {
+        try {
+            var q = "SELECT * FROM productseason WHERE productId = " + productId;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return [];
         }
     }
 }
@@ -727,6 +773,15 @@ module.exports.productInventory = {
             return true;
         } catch (err) {
             return false;
+        }
+    },
+    async getProductInventories(productId) {
+        try {
+            var q = "SELECT * FROM productinventory WHERE productId = " + productId;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+            return [];
         }
     }
 }

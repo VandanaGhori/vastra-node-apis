@@ -192,5 +192,44 @@ module.exports = {
             return res.json(utils.sendResponse(false, 500, "Delete unsuccessful"));
         }
         return res.json(utils.sendResponse(true, 200, "Delete unsuccessful"))
-    }
+    },
+    getProduct: async function (req, res) {
+        input = req.query;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.productId == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        let product = await db_operations.product.getProductById(input.productId);
+        if (product == null) {
+            return res.json(utils.sendResponse(false, 500, "Product does not exist"));
+        }
+
+        product.images = JSON.parse(product.images);
+        
+        product.productType = await db_operations.productType.getProductType(product.typeId);
+
+        product.occasions = await db_operations.productOccasion.getProductOccasions(product.id);
+
+        product.materials = await db_operations.productMaterials.getProductMaterials(product.id);
+
+        product.seasons = await db_operations.productSeasons.getProductSeasons(product.id);
+
+        product.colors = await db_operations.productColors.getAllProductColors(product.id);
+
+        product.sizes = await db_operations.productSizes.getAllProductSizes(product.id);
+
+        product.inventories = await db_operations.productInventory.getProductInventories(product.id);
+
+        return res.json(utils.sendResponse(true, 200, "Product info", product));
+    },
 };
