@@ -60,12 +60,12 @@ app.post('/upload', function(req,res){
 })
 
 // --------------ProductSize---------------------
-// app.get('/product/size/list', function(req,res) {
-//     productSize.getProductSizes(req,res)
-// })
-
 app.get('/product/size/list', function(req,res) {
     productSize.getProductSizes(req,res)
+})
+
+app.get('/product/customSize/list', function(req,res) {
+    productSize.getCustomProductSizes(req,res)
 })
 
 // -----------------ProductType------------
@@ -91,16 +91,6 @@ app.post('/user', function(req,res) {
     user.addNewUser(req,res)
 })
 
-// -----------------Login---------------------------
-app.post('/login', function(req,res) {
-    user.login(req,res)
-})
-
-// ------------------Logout-------------------------
-app.delete('/logout', function(req,res) {
-    user.logout(req,res)
-})
-
 app.put('/user', function(req,res){
     user.updateShopper(req,res)    
 })
@@ -112,6 +102,10 @@ app.post('/fd/user', function(req,res) {
 
 app.put('/fd/user', function(req,res){
     fashionDesigner.updateFashionDesigner(req,res)
+})
+
+app.get('/fd/user/list', function(req,res){
+    fashionDesigner.getDesigners(req,res)
 })
 
 // -----------------Color------------------------
@@ -138,6 +132,16 @@ app.post('/product/inventory/list' , function(req,res){
 
 app.put('/product/inventory/list' , function(req,res){
     productInventory.updateProductInventories(req,res)
+})
+
+// -----------------Login---------------------------
+app.post('/login', function(req,res) {
+    user.login(req,res)
+})
+
+// ------------------Logout-------------------------
+app.delete('/logout', function(req,res) {
+    user.logout(req,res)
 })
 
 app.listen(port, () => {

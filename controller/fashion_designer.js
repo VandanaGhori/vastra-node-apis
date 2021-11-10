@@ -135,6 +135,15 @@ module.exports = {
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
+    },
+    getDesigners: async function(req,res) {
+        let designersResponse = await db_operations.fashionDesigner.getAllDesigners();
+        if(designersResponse.length > 0) {
+            res.json(utils.sendResponse(true, 200, "All Designers", designersResponse));
+            return;
+        } else {
+            return res.json(utils.sendResponse(false, 500, "Opps something went wrong with designers"))
+        }
     }
 }
 

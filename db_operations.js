@@ -102,17 +102,17 @@ module.exports.productType = {
 }
 
 module.exports.productSize = {
-    // async getAllProductSizes(table_name, designerId, productTypeId) {
-    //     try {
-    //         var q = "SELECT brandSize FROM " + table_name + " where productId in " +
-    //             "(select productId from product where catalogueId in (SELECT catalogueId FROM catalogue" +
-    //             " where designerId = " + designerId + " ) and typeId = " + productTypeId + " )";
-    //         const data = await query(q);
-    //         return data;
-    //     } catch (err) {
-    //         return false;
-    //     }
-    // }
+    async getAllCustomProductSizes(table_name, designerId, productTypeId) {
+        try {
+            var q = "SELECT distinct customSize FROM " + table_name + " where sizeType = 4";
+            const data = await query(q);
+            if(data.length > 0) {
+                return data;
+            }
+        } catch (err) {
+        }
+        return [];
+    },
     async getAllProductSizes(table_name, designerId, productId) {
         try {
             var q = "SELECT ps.* FROM " + table_name + " as ps, product as p WHERE p.id = ps.productId " +
@@ -322,6 +322,18 @@ module.exports.fashionDesigner = {
         }
         return false;
     },
+    async getAllDesigners() {
+        try {
+            var q = "SELECT u.*,d.id as designerId, d.brandName, d.tagline FROM user as u, " +
+            "designer as d where type = 2 and u.id = d.userId";
+            const data = await query(q);
+            if (data.length > 0) {
+                return data;
+            }
+        } catch (err) {
+        }
+        return [];
+    }
 }
 
 module.exports.catalogue = {

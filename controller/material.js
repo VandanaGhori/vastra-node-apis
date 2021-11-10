@@ -9,7 +9,7 @@ module.exports = {
             res.json(utils.sendResponse(true, 200, "All Materials", getMaterialsResponse));
             return;
         } else {
-            return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
+            return res.json(utils.sendResponse(false, 500, "Opps something went wrong with materials"));
         }
     },
     createMaterial : async function(req,res) {
