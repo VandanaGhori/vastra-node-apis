@@ -54,6 +54,14 @@ app.get('/product/exist/fd', function(req,res) {
     products.isAnyProductExistForDesigner(req,res)
 })
 
+app.get('/product/fd/catalogue/list', function(req,res) {
+    products.getCatalogueProducts(req,res)
+})
+
+app.delete('/product', function(req,res){
+    products.deleteProduct(req,res)
+})
+
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
     image.uploadImage(req,res)

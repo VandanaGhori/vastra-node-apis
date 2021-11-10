@@ -32,6 +32,22 @@ module.exports.product = {
             return false;
         }
     },
+    async getCatalogueProducts(catalogueId) {
+        try {
+            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overallRating, " +
+                "d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName " +
+                "from product as p, designer d, user as u " +
+                "Where p.designerId = d.id AND d.userId = u.id " +
+                "AND p.isDeleted = 0 AND p.catalogueId = " + catalogueId;
+            const data = await query(q);
+            data.map(async (element) => {
+                element.images = JSON.parse(element.images)
+            })
+            return data;
+        } catch (err) {
+            return false;
+        }
+    },
     async addProduct(values) {
         try {
             var q = "Insert into product (designerId, catalogueId, typeId, title, description, images, price, " +
@@ -63,11 +79,12 @@ module.exports.product = {
     },
     async deleteProduct(product_id) {
         try {
-            var q = "Delete from product where id = " + product_id;
-            const rows = await query(q);
-            // console.log("Delete record " + rows)
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update product set isDeleted = 1, deletedAt = ? where id = " + product_id;
+            const rows = await query(q, [deletedAt]);
             return rows;
         } catch (err) {
+            console.log(err)
             return false;
         }
     }

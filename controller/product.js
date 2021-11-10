@@ -6,7 +6,31 @@ module.exports = {
     getAllProducts: async function (req, res) {
         let productResponse = await db_operations.product.getAllProducts("product");
         if (productResponse != false) {
-            res.json(utils.sendResponse(false, 200, "All the Products", productResponse));
+            res.json(utils.sendResponse(true, 200, "All the Products", productResponse));
+            return;
+        }
+        return res.json(utils.sendResponse(false, 500, "Oops something went wrong"));
+    },
+    getCatalogueProducts: async function (req, res) {
+        input = req.query;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.catalogueId == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        let productResponse = await db_operations.product.getCatalogueProducts(input.catalogueId);
+        if (productResponse != false) {
+
+            res.json(utils.sendResponse(true, 200, "All the Products", productResponse));
             return;
         }
         return res.json(utils.sendResponse(false, 500, "Oops something went wrong"));
@@ -124,8 +148,6 @@ module.exports = {
         }
         insertedProduct.sizes = await db_operations.productSizes.getAllProductSizes(productId);
 
-        console.log(insertedProduct)
-
         return res.json(utils.sendResponse(true, 200, "Product is added", insertedProduct));
     },
     isAnyProductExistForDesigner: async function (req, res) {
@@ -148,5 +170,27 @@ module.exports = {
         let isAnyProductsExist = productsResponse[0].totalProducts > 0
         res.json(utils.sendResponse(true, 200, "", isAnyProductsExist));
         return;
+    },
+    deleteProduct: async function (req, res) {
+        input = req.query;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.productId == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        let deleteResponse = await db_operations.product.deleteProduct(input.productId);
+        if (deleteResponse == false) {
+            return res.json(utils.sendResponse(false, 500, "Delete unsuccessful"));
+        }
+        return res.json(utils.sendResponse(true, 200, "Delete unsuccessful"))
     }
 };
