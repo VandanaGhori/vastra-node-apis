@@ -1,3 +1,4 @@
+const { count } = require("console");
 const { response } = require("express");
 const util = require('util');
 const product = require("./controller/product");
@@ -91,6 +92,92 @@ module.exports.product = {
             console.log(err)
             return false;
         }
+    },
+    async getFilteredProducts(productFilters) {
+        try {
+            var whereConditions = "";
+            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, d.userId as designerId, d.brandName," + 
+            " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
+            "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked "+
+            "from product as p, user as u, designer as d"; 
+            
+            whereConditions += " p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
+            " and p.designerId = d.id and u.id = d.userId";
+
+            if(productFilters.productPatterns != undefined) {
+                whereConditions += " and pattern in (" + productFilters.productPatterns + ")";
+            }
+
+            if(productFilters.productKnitWovens != undefined) {
+                whereConditions += " and knitOrWoven in (" + productFilters.productKnitWovens + ")";
+            }
+
+            if(productFilters.productWashCares != undefined) {
+                whereConditions += " and washCare in (" + productFilters.productWashCares + ")";
+            }
+
+             if(productFilters.productColors != undefined) {
+                q += " , productcolor as pc, color as c";
+                whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
+                "c.id = pc.thirdColorId) and pc.productId = p.id) ";
+             }
+
+             if(productFilters.productMaterials != undefined) {
+                q += " , productmaterial as pm, material as m";
+                whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
+             }
+
+             if(productFilters.productOccasions != undefined) {
+                q += " , productoccasion as po";
+                whereConditions += " and po.occasion in (" + productFilters.productOccasions + 
+                ") and po.productId = p.id";
+             }
+
+             if(productFilters.productSeasons != undefined) {
+                q += " , productseason as ps";
+                whereConditions += " and ps.season in (" + productFilters.productSeasons + 
+                ") and ps.productId = p.id";
+             }
+
+             if(productFilters.productTypes != undefined) {
+                q += " , producttype as pt";
+                whereConditions += " and p.typeId in (" + productFilters.productTypes + 
+                ") and pt.id = p.typeId";
+             }
+
+             if(productFilters.productDesigners != undefined) {
+                whereConditions += " and p.designerId in (" + productFilters.productDesigners + 
+                ") and p.designerId = d.id";
+             }
+
+             if(productFilters.productBrandSizes != undefined) {
+                q += " , productsize as pSize";
+                brandSizes = productFilters.productBrandSizes.map(i=>`'${i}'`).join(',');
+                whereConditions += " and pSize.brandSize in (" + brandSizes + 
+                ") and ps.productId = p.id";
+             } 
+
+             if(productFilters.productCustomSizes != undefined) {
+                if(productFilters.productBrandSizes == undefined) {
+                    q += " , productsize as pSize";
+                }
+                customSizes = productFilters.productCustomSizes.map(i=>`'${i}'`).join(',');
+                whereConditions += " and pSize.customSize in (" + customSizes + 
+                ") and pSize.sizeType = 4 and pSize.productId = p.id";
+             }
+
+             var query = q + whereConditions;
+             console.log("Query = " + query);
+             //console.log("where " + whereConditions);
+             
+            const data = await query(query);
+            if(data.length > 0) {
+                return data;
+            } 
+        } catch (err) {
+            return false;
+        }
+        return [];
     }
 }
 
@@ -358,8 +445,10 @@ module.exports.fashionDesigner = {
     },
     async getAllDesigners() {
         try {
-            var q = "SELECT u.*,d.id as designerId, d.brandName, d.tagline FROM user as u, " +
+            var q = "SELECT u.id as userId,u.email,u.firstName, u.lastName, u.address, u.city, u.province, u.postalCode, u.avatarURL" + 
+            ", d.id, d.brandName, d.tagline FROM user as u, " +
             "designer as d where type = 2 and u.id = d.userId";
+            //console.log("Query " + q);
             const data = await query(q);
             if (data.length > 0) {
                 return data;

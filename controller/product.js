@@ -29,7 +29,6 @@ module.exports = {
 
         let productResponse = await db_operations.product.getCatalogueProducts(input.catalogueId);
         if (productResponse != false) {
-
             res.json(utils.sendResponse(true, 200, "All the Products", productResponse));
             return;
         }
@@ -232,4 +231,29 @@ module.exports = {
 
         return res.json(utils.sendResponse(true, 200, "Product info", product));
     },
+    getFilteredProducts: async function(req, res) {
+        input = req.body;
+        token = req.headers['token'];
+        if(token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        let filteredProductsResponse = await db_operations.product.getFilteredProducts(input);
+
+        if(filteredProductsResponse != false && filteredProductsResponse.length > 0) {
+            res.json(utils.sendResponse(true, 200, "All the Filtered Products", filteredProductsResponse));
+            return;
+        }
+
+        if(filteredProductsResponse.length == 0) {
+            return res.json(utils.sendResponse(false, 500, "No matched product found."));   
+        }
+        
+        return res.json(utils.sendResponse(false, 500, "Oops something went wrong with filtered products"));
+    }
 };
