@@ -70,6 +70,10 @@ app.post('/product/list', function(req, res) {
     products.getFilteredProducts(req, res)
 })
 
+app.put('/product', function(req,res){
+    products.updateProduct(req,res)
+})
+
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
     image.uploadImage(req,res)
@@ -139,6 +143,10 @@ app.put('/product/color', function(req,res){
 
 app.delete('/product/color', function(req,res){
     color.deleteProductColor(req,res)
+})
+
+app.put('/product/color/list', function(req,res){
+    color.updateProductColors(req,res)
 })
 
 // ------------------ProductInventory------------------

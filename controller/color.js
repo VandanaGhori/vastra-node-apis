@@ -70,11 +70,11 @@ module.exports = {
                 "thirdColorId": input.thirdColorId ? input.thirdColorId : null
             }
             let updateProductColorResponse = await db_operations.color.updateProductColor
-            ("productcolor", updateProductColor, input.id, input.productId);
+                ("productcolor", updateProductColor, input.id, input.productId);
             //console.log("Update ProductColor Repsonse = " + JSON.stringify(updateProductColorResponse));
-            if(updateProductColorResponse != false) {
+            if (updateProductColorResponse != false) {
                 let getProductColorByIdResponse = await db_operations.color.getUpdatedProductColorById("productcolor", input.id, input.productId);
-                if(getProductColorByIdResponse == false) {
+                if (getProductColorByIdResponse == false) {
                     return res.json(utils.sendResponse(false, 500, "Product color does not updated."));
                 }
                 return res.json(utils.sendResponse(true, 200, "Product color is updated.", getProductColorByIdResponse));
@@ -85,7 +85,7 @@ module.exports = {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     },
-    deleteProductColor: async function (req,res) {
+    deleteProductColor: async function (req, res) {
         input = req.body;
         token = req.headers['token'];
         if (token == null) {
@@ -100,12 +100,76 @@ module.exports = {
                 return;
             }
             let deleteProductColorResponse = await db_operations.color.deleteProductColor("productcolor", input.id);
-            if(deleteProductColorResponse == false) {
+            if (deleteProductColorResponse == false) {
                 return res.json(utils.sendResponse(false, 500, "Product color is not deleted."));
             }
-            return res.json(utils.sendResponse(true, 200, "Product color is deleted successfully."));            
+            return res.json(utils.sendResponse(true, 200, "Product color is deleted successfully."));
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
-    }
+    },
+    updateProductColors: async function (req, res) {
+        input = req.body;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.productId == null || input.productColors == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        if (input.productColors.length == 0) {
+            return res.json(utils.sendResponse(false, 404, "Product should have one or more colors"));
+        }
+
+        await Promise.all(input.productColors.map(async (productColor) => {
+            if (productColor.prominentColorId == null) {
+                return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+            }
+            productColor.productId = input.productId;
+        }))
+
+        let existingColors = await db_operations.productColors.getAllProductColors(input.productId);
+        await Promise.all(existingColors.map(async (existingProductColor) => {
+            var isDeleted = true;
+            input.productColors.map((updateProductColor) => {
+                if (existingProductColor.id == updateProductColor.id) {
+                    isDeleted = false;
+                }
+            })
+            if (isDeleted) {
+                // delete inventories -> set isdeleted
+                let deleteInventoriesRes = await db_operations.productInventory.deleteProductColorInventories(existingProductColor.id);
+                if (deleteInventoriesRes != false) {
+                    // delete product color -> set isdeleted
+                    await db_operations.productColors.deleteProductColor(existingProductColor.id);
+                }
+            }
+        }))
+
+        await Promise.all(input.productColors.map(async (productColor) => {
+            if (productColor.id == 0) {
+                // create new
+                await db_operations.productColors.addProductColor(input.productId, productColor)
+            } else {
+                let existingProductColor = await db_operations.productColors.getProductColorById(productColor.id);
+                if (existingProductColor == null) {
+                    // create new
+                    await db_operations.productColors.addProductColor(input.productId, productColor)
+                } else {
+                    // update
+                    await db_operations.productColors.updateProductColor(productColor)
+                }
+            }
+        }))
+
+        let productColors = await db_operations.productColors.getAllProductColors(input.productId);
+        return res.json(utils.sendResponse(true, 200, "Product colors are updated", productColors));
+    },
 }

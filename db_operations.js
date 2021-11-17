@@ -60,13 +60,27 @@ module.exports.product = {
             return null;
         }
     },
+    async updateProduct(product) {
+        try {
+            var q = "Update product set catalogueId = ?, typeId = ?, title = ?, description = ?, images = ?, price = ?, " +
+                "multipackSet = ?, weight = ?, pattern = ?, knitOrWoven = ?, washCare = ?, trend = ?, updatedAt = ? " +
+                "where id = " + product.id;
+            const rows = await query(q, [product.catalogueId, product.typeId, product.title, product.description,
+            product.images, product.price, product.multipackSet, product.weight, product.pattern, product.knitOrWoven,
+            product.washCare, product.trend, product.updatedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    },
     async getProductById(product_id) {
         try {
             var q = "SELECT p.*, " +
-            "d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName " +
-            "from product as p, designer d, user as u " +
-            "Where p.designerId = d.id AND d.userId = u.id AND " + 
-            "p.id = " + product_id;
+                "d.brandName, CONCAT(u.firstName, ' ', u.lastName) as designerName " +
+                "from product as p, designer d, user as u " +
+                "Where p.designerId = d.id AND d.userId = u.id AND " +
+                "p.id = " + product_id;
             const data = await query(q);
             return data[0];
         } catch (err) {
@@ -212,7 +226,7 @@ module.exports.productType = {
             var q = "SELECT * FROM producttype WHERE id = " + id;
             const data = await query(q);
             let row = data[0];
-            if(row != undefined){
+            if (row != undefined) {
                 return row;
             }
         } catch (err) {
@@ -242,7 +256,7 @@ module.exports.productSize = {
         try {
             var q = "SELECT distinct customSize FROM " + table_name + " where sizeType = 4";
             const data = await query(q);
-            if(data.length > 0) {
+            if (data.length > 0) {
                 return data;
             }
         } catch (err) {
@@ -646,11 +660,22 @@ module.exports.productMaterials = {
             return false;
         }
     },
+    async deleteProductMaterials(productId) {
+        try {
+            var q = "DELETE FROM productmaterial WHERE productId = " + productId;
+            const rows = await query(q);
+            // console.log("Delete record " + rows)
+            return rows;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
     async getProductMaterials(productId) {
         try {
-            var q = "SELECT pm.*, m.material as materialName "+
-            "FROM productmaterial as pm, material as m "+
-            "WHERE pm.materialId = m.id AND productId = " + productId;
+            var q = "SELECT pm.*, m.material as materialName " +
+                "FROM productmaterial as pm, material as m " +
+                "WHERE pm.materialId = m.id AND productId = " + productId;
             const data = await query(q);
             return data;
         } catch (err) {
@@ -673,6 +698,17 @@ module.exports.productOccasion = {
                 query(q, [Object.values(occasion)]);
             });
             return true;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
+    async deleteProductOccasions(productId) {
+        try {
+            var q = "DELETE FROM productoccasion WHERE productId = " + productId;
+            const rows = await query(q);
+            // console.log("Delete record " + rows)
+            return rows;
         } catch (err) {
             console.log("Error = " + err);
             return false;
@@ -709,6 +745,17 @@ module.exports.productSeasons = {
             return false;
         }
     },
+    async deleteProductSeasons(productId) {
+        try {
+            var q = "DELETE FROM productseason WHERE productId = " + productId;
+            const rows = await query(q);
+            // console.log("Delete record " + rows)
+            return rows;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
     async getProductSeasons(productId) {
         try {
             var q = "SELECT * FROM productseason WHERE productId = " + productId;
@@ -731,7 +778,7 @@ module.exports.productColors = {
                     'productId': product_id,
                     'prominentColorId': element.prominentColorId,
                     'secondaryColorId': element.secondaryColorId == 0 ? null : element.secondaryColorId,
-                    'thirdColorId': element.thirdColorId == 0 ? null : element.secondaryColorId
+                    'thirdColorId': element.thirdColorId == 0 ? null : element.thirdColorId
                 }
                 query(q, [Object.values(color)]);
             });
@@ -742,13 +789,41 @@ module.exports.productColors = {
             return false;
         }
     },
+    async addProductColor(product_id, productColor) {
+        try {
+            var q = "Insert into productcolor (productId, prominentColorId, secondaryColorId, thirdColorId) values (?)";
+            let color = {
+                'productId': product_id,
+                'prominentColorId': productColor.prominentColorId,
+                'secondaryColorId': productColor.secondaryColorId == 0 ? null : productColor.secondaryColorId,
+                'thirdColorId': productColor.thirdColorId == 0 ? null : productColor.thirdColorId
+            }
+            const rows = await query(q, [Object.values(color)]);
+            return rows[0];
+        } catch (err) {
+            console.log("Error = " + err);
+            return null;
+        }
+    },
+    async updateProductColor(productColor) {
+        try {
+            var q = "Update productcolor set prominentColorId = ?, secondaryColorId = ?, thirdColorId = ? " +
+                "where id = " + productColor.id;
+            let secondaryColorId = productColor.secondaryColorId == 0 ? null : productColor.secondaryColorId;
+            let thirdColorId = productColor.thirdColorId == 0 ? null : productColor.thirdColorId;
+            const rows = await query(q, [productColor.prominentColorId, secondaryColorId, thirdColorId]);
+            return rows;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
     async getAllProductColors(product_id) {
         try {
-            var q = "SELECT * FROM productcolor where productId = " + product_id;
+            var q = "SELECT * FROM productcolor where productId = " + product_id + " AND isDeleted = 0";
             const data = await query(q);
             if (data.length > 0) {
                 await Promise.all(data.map(async (element) => {
-                    console.log("-- " + JSON.stringify(element))
                     var q1 = "SELECT * FROM color where id = " + element.prominentColorId;
                     const data1 = await query(q1);
                     let color1 = data1[0];
@@ -776,6 +851,28 @@ module.exports.productColors = {
         } catch (err) {
         }
         return [];
+    },
+    async getProductColorById(productColorId) {
+        try {
+            var q = "SELECT * FROM productcolor where id = " + productColorId + " AND isDeleted = 0";
+            const data = await query(q);
+            if (data.length > 0) {
+                return data[0]
+            }
+        } catch (err) {
+        }
+        return null;
+    },
+    async deleteProductColor(id) {
+        try {
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update productcolor set isDeleted = 1, deletedAt = ? where id = " + id;
+            const rows = await query(q, [deletedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err)
+            return false;
+        }
     }
 }
 
@@ -881,11 +978,33 @@ module.exports.productInventory = {
     },
     async getProductInventories(productId) {
         try {
-            var q = "SELECT * FROM productinventory WHERE productId = " + productId;
+            var q = "SELECT * FROM productinventory WHERE productId = " + productId + " AND isDeleted = 0";
             const data = await query(q);
             return data;
         } catch (err) {
             return [];
+        }
+    },
+    async deleteProductInventory(id) {
+        try {
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update productinventory set isDeleted = 1, deletedAt = ? where id = " + id;
+            const rows = await query(q, [deletedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err)
+            return false;
+        }
+    },
+    async deleteProductColorInventories(productColorId) {
+        try {
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update productinventory set isDeleted = 1, deletedAt = ? where productColorId = " + productColorId;
+            const rows = await query(q, [deletedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err)
+            return false;
         }
     }
 }

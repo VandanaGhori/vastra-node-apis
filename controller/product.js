@@ -263,5 +263,107 @@ module.exports = {
         }
         
         return res.json(utils.sendResponse(false, 500, "Oops something went wrong with filtered products"));
-    }
+    },
+    updateProduct: async function (req, res) {
+        input = req.body;
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if (validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        if (input.id == null || input.catalogueId == null || input.typeId == null ||
+            input.title == null || input.description == null || input.images == null || input.price == null ||
+            input.multipackSet == null || input.weight == null || input.pattern == null || input.knitOrWoven == null ||
+            input.washCare == null || input.occasions == null || input.seasons == null || input.materials == null) {
+            return res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+        }
+
+        let existingProduct = await db_operations.product.getProductById(input.id);
+        if (existingProduct == null) {
+            return res.json(utils.sendResponse(false, 500, "Product does not exist."));
+        }
+
+        var date = new Date();
+        let product = {
+            'id': input.id,
+            'catalogueId': input.catalogueId,
+            'typeId': input.typeId,
+            'title': input.title,
+            'description': input.description,
+            'images': JSON.stringify(input.images),
+            'price': input.price,
+            'multipackSet': input.multipackSet,
+            'weight': input.weight,
+            'pattern': input.pattern,
+            'knitOrWoven': input.knitOrWoven,
+            'washCare': input.washCare,
+            'trend': input.trend,
+            'updatedAt': date.toISOString().slice(0, 19).replace('T', ' ')
+        }
+        // var productObj = Object.values(product);
+        let resObj = await db_operations.product.updateProduct(product);
+        if (resObj == null) {
+            return res.json(utils.sendResponse(false, 500, "Something went wrong in updating product."));
+        }
+
+        let productId = product.id;
+
+        // occasions
+        let resDeleteOccasions = await db_operations.productOccasion.deleteProductOccasions(productId);
+        if (resDeleteOccasions == false) {
+            console.log("error delete occasions")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product occasions."));
+        }
+        let resAddOccasions = await db_operations.productOccasion.addProductOccasions(productId, input.occasions);
+        if (resAddOccasions == false) {
+            console.log("error update occasions")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product occasions."));
+        }
+
+        // seasons
+        let resDeleteSeasons = await db_operations.productSeasons.deleteProductSeasons(productId);
+        if (resDeleteSeasons == false) {
+            console.log("error delete seasons")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product seasons."));
+        }
+        let resAddSeasons = await db_operations.productSeasons.addProductSeasons(productId, input.seasons);
+        if (resAddSeasons == false) {
+            console.log("error update seasons")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product seasons."));
+        }
+
+        // materials
+        await Promise.all(input.materials.map(async (element) => {
+            if (element.materialId == 0) {
+                let materialExist = await db_operations.material.isMaterialExist("material", element.materialName);
+                if (materialExist != false && materialExist != undefined) {
+                    element.materialId = materialExist.id;
+                } else {
+                    let addMaterialResponse = await db_operations.material.addMaterial("material", element.materialName);
+                    if (addMaterialResponse != false) {
+                        element.materialId = addMaterialResponse.insertId;
+                    } else {
+                        return res.json(utils.sendResponse(false, 500, "Something went wrong on materials."));
+                    }
+                }
+            }
+        }))
+        let resDeleteMaterials = await db_operations.productMaterials.deleteProductMaterials(productId);
+        if (resDeleteMaterials == false) {
+            console.log("error delete product materials")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product materials."));
+        }
+        let resAddMaterials = await db_operations.productMaterials.addProductMaterials(productId, input.materials);
+        if (resAddMaterials == false) {
+            console.log("error update product materials")
+            return res.json(utils.sendResponse(false, 500, "Something went wrong on product materials."));
+        }
+
+        return res.json(utils.sendResponse(true, 200, "Product is updated"));
+    },
 };
