@@ -88,6 +88,10 @@ app.get('/product/customSize/list', function(req,res) {
     productSize.getCustomProductSizes(req,res)
 })
 
+app.put('/product/size/list', function(req,res){
+    productSize.updateProductSizes(req,res)
+})
+
 // -----------------ProductType------------
 app.get('/product/type/list', function(req,res){
     productType.getProductTypes(req,res)

@@ -110,99 +110,99 @@ module.exports.product = {
     async getFilteredProducts(productFilters) {
         try {
             var whereConditions = "";
-            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, d.userId as designerId, d.brandName," + 
-            " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
-            "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked "+
-            "from product as p, user as u, designer as d"; 
-            
-            whereConditions += " where p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
-            " and p.designerId = d.id and u.id = d.userId";
+            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, d.userId as designerId, d.brandName," +
+                " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
+                "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
+                "from product as p, user as u, designer as d";
 
-            if(productFilters.productPatterns != undefined && productFilters.productPatterns != null
+            whereConditions += " where p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
+                " and p.designerId = d.id and u.id = d.userId";
+
+            if (productFilters.productPatterns != undefined && productFilters.productPatterns != null
                 && productFilters.productPatterns.length != 0) {
                 whereConditions += " and pattern in (" + productFilters.productPatterns + ")";
             }
 
-            if(productFilters.productKnitWovens != undefined && productFilters.productKnitWovens != null
+            if (productFilters.productKnitWovens != undefined && productFilters.productKnitWovens != null
                 && productFilters.productKnitWovens.length != 0) {
                 whereConditions += " and knitOrWoven in (" + productFilters.productKnitWovens + ")";
             }
 
-            if(productFilters.productWashCares != undefined && productFilters.productWashCares != null
+            if (productFilters.productWashCares != undefined && productFilters.productWashCares != null
                 && productFilters.productWashCares.length != 0) {
                 whereConditions += " and washCare in (" + productFilters.productWashCares + ")";
             }
 
-            if(productFilters.productColors != undefined && productFilters.productColors != null
+            if (productFilters.productColors != undefined && productFilters.productColors != null
                 && productFilters.productColors.length != 0) {
-            q += " , productcolor as pc, color as c";
-            whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
-            "c.id = pc.thirdColorId) and pc.productId = p.id) ";
+                q += " , productcolor as pc, color as c";
+                whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
+                    "c.id = pc.thirdColorId) and pc.productId = p.id) ";
             }
 
-            if(productFilters.productMaterials != undefined && productFilters.productMaterials != null
+            if (productFilters.productMaterials != undefined && productFilters.productMaterials != null
                 && productFilters.productMaterials.length != 0) {
-            q += " , productmaterial as pm, material as m";
-            whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
+                q += " , productmaterial as pm, material as m";
+                whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
             }
 
-            if(productFilters.productOccasions != undefined && productFilters.productOccasions != null
+            if (productFilters.productOccasions != undefined && productFilters.productOccasions != null
                 && productFilters.productOccasions.length != 0) {
-            q += " , productoccasion as po";
-            whereConditions += " and po.occasion in (" + productFilters.productOccasions + 
-            ") and po.productId = p.id";
+                q += " , productoccasion as po";
+                whereConditions += " and po.occasion in (" + productFilters.productOccasions +
+                    ") and po.productId = p.id";
             }
 
-            if(productFilters.productSeasons != undefined && productFilters.productSeasons != null
+            if (productFilters.productSeasons != undefined && productFilters.productSeasons != null
                 && productFilters.productSeasons.length != 0) {
-            q += " , productseason as ps";
-            whereConditions += " and ps.season in (" + productFilters.productSeasons + 
-            ") and ps.productId = p.id";
+                q += " , productseason as ps";
+                whereConditions += " and ps.season in (" + productFilters.productSeasons +
+                    ") and ps.productId = p.id";
             }
 
-            if(productFilters.productTypes != undefined && productFilters.productTypes != null
+            if (productFilters.productTypes != undefined && productFilters.productTypes != null
                 && productFilters.productTypes.length != 0) {
-            q += " , producttype as pt";
-            whereConditions += " and p.typeId in (" + productFilters.productTypes + 
-            ") and pt.id = p.typeId";
+                q += " , producttype as pt";
+                whereConditions += " and p.typeId in (" + productFilters.productTypes +
+                    ") and pt.id = p.typeId";
             }
 
-            if(productFilters.productDesigners != undefined && productFilters.productDesigners != null
+            if (productFilters.productDesigners != undefined && productFilters.productDesigners != null
                 && productFilters.productDesigners.length != 0) {
-            whereConditions += " and p.designerId in (" + productFilters.productDesigners + 
-            ") and p.designerId = d.id";
+                whereConditions += " and p.designerId in (" + productFilters.productDesigners +
+                    ") and p.designerId = d.id";
             }
 
-            if(productFilters.productBrandSizes != undefined && productFilters.productBrandSizes != null
+            if (productFilters.productBrandSizes != undefined && productFilters.productBrandSizes != null
                 && productFilters.productBrandSizes.length != 0) {
-            q += " , productsize as pSize";
-            brandSizes = productFilters.productBrandSizes.map(i=>`'${i}'`).join(',');
-            whereConditions += " and pSize.brandSize in (" + brandSizes + 
-            ") and pSize.productId = p.id";
-            } 
-
-            if(productFilters.productCustomSizes != undefined && productFilters.productCustomSizes != null
-                && productFilters.productCustomSizes.length != 0) {
-            if(productFilters.productBrandSizes == undefined) {
                 q += " , productsize as pSize";
+                brandSizes = productFilters.productBrandSizes.map(i => `'${i}'`).join(',');
+                whereConditions += " and pSize.brandSize in (" + brandSizes +
+                    ") and pSize.productId = p.id";
             }
-            customSizes = productFilters.productCustomSizes.map(i=>`'${i}'`).join(',');
-            whereConditions += " and pSize.customSize in (" + customSizes + 
-            ") and pSize.sizeType = 4 and pSize.productId = p.id";
+
+            if (productFilters.productCustomSizes != undefined && productFilters.productCustomSizes != null
+                && productFilters.productCustomSizes.length != 0) {
+                if (productFilters.productBrandSizes == undefined) {
+                    q += " , productsize as pSize";
+                }
+                customSizes = productFilters.productCustomSizes.map(i => `'${i}'`).join(',');
+                whereConditions += " and pSize.customSize in (" + customSizes +
+                    ") and pSize.sizeType = 4 and pSize.productId = p.id";
             }
 
             var finalQuery = q + whereConditions;
 
             console.log("Query = \n " + finalQuery);
             //console.log("where " + whereConditions);
-            
+
             const data = await query(finalQuery);
 
             console.log("data " + JSON.stringify(data));
-                        
-            if(data.length > 0) {
+
+            if (data.length > 0) {
                 return data;
-            } 
+            }
         } catch (err) {
             return false;
         }
@@ -474,9 +474,9 @@ module.exports.fashionDesigner = {
     },
     async getAllDesigners() {
         try {
-            var q = "SELECT u.id as userId,u.email,u.firstName, u.lastName, u.address, u.city, u.province, u.postalCode, u.avatarURL" + 
-            ", d.id, d.brandName, d.tagline FROM user as u, " +
-            "designer as d where type = 2 and u.id = d.userId";
+            var q = "SELECT u.id as userId,u.email,u.firstName, u.lastName, u.address, u.city, u.province, u.postalCode, u.avatarURL" +
+                ", d.id, d.brandName, d.tagline FROM user as u, " +
+                "designer as d where type = 2 and u.id = d.userId";
             //console.log("Query " + q);
             const data = await query(q);
             if (data.length > 0) {
@@ -927,9 +927,75 @@ module.exports.productSizes = {
             return false;
         }
     },
+    async addProductSize(product_id, productSize) {
+        try {
+            var q = "Insert into productsize (productId, sizeType, brandSize, USSize, " +
+                "headCircumferenceMin, headCircumferenceMax, neckMin, neckMax, bustMin, bustMax, " +
+                "waistMin, waistMax, hipMin, hipMax, inseamLength, outseamLength, sleeveLength, " +
+                "palmCircumferenceMin, palmCircumferenceMax, palmToFingerLength, wristMin, wristMax, footLength, " +
+                "frontLength, backLength, width, weightGram, volumeML, customSize) values (?)";
+
+            let size = {
+                'productId': product_id,
+                'sizeType': productSize.sizeType,
+                'brandSize': productSize.brandSize,
+                'USSize': productSize.USSize,
+                'headCircumferenceMin': productSize.headCircumferenceMin,
+                'headCircumferenceMax': productSize.headCircumferenceMax,
+                'neckMin': productSize.neckMin,
+                'neckMax': productSize.neckMax,
+                'bustMin': productSize.bustMin,
+                'bustMax': productSize.bustMax,
+                'waistMin': productSize.waistMin,
+                'waistMax': productSize.waistMax,
+                'hipMin': productSize.hipMin,
+                'hipMax': productSize.hipMax,
+                'inseamLength': productSize.inseamLength,
+                'outseamLength': productSize.outseamLength,
+                'sleeveLength': productSize.sleeveLength,
+                'palmCircumferenceMin': productSize.palmCircumferenceMin,
+                'palmCircumferenceMax': productSize.palmCircumferenceMax,
+                'palmToFingerLength': productSize.palmToFingerLength,
+                'wristMin': productSize.wristMin,
+                'wristMax': productSize.wristMax,
+                'footLength': productSize.footLength,
+                'frontLength': productSize.frontLength,
+                'backLength': productSize.backLength,
+                'width': productSize.width,
+                'weightGram': productSize.weightGram,
+                'volumeML': productSize.volumeML,
+                'customSize': productSize.customSize
+            }
+            query(q, [Object.values(size)]);
+
+            return true;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
+    async updateProductSize(size) {
+        try {
+            var q = "Update productsize set sizeType = ?, brandSize = ?, USSize = ?, " +
+                "headCircumferenceMin = ?, headCircumferenceMax = ?, neckMin = ?, neckMax = ?, bustMin = ?, bustMax = ?, " +
+                "waistMin = ?, waistMax = ?, hipMin = ?, hipMax = ?, inseamLength = ?, outseamLength = ?, sleeveLength = ?, " +
+                "palmCircumferenceMin = ?, palmCircumferenceMax = ?, palmToFingerLength = ?, wristMin = ?, wristMax = ?, footLength = ?, " +
+                "frontLength = ?, backLength = ?, width = ?, weightGram = ?, volumeML = ?, customSize = ? " +
+                "where id = " + size.id;
+            const rows = await query(q, [size.sizeType, size.brandSize, size.USSize,
+            size.headCircumferenceMin, size.headCircumferenceMax, size.neckMin, size.neckMax, size.bustMin, size.bustMax,
+            size.waistMin, size.waistMax, size.hipMin, size.hipMax, size.inseamLength, size.outseamLength, size.sleeveLength,
+            size.palmCircumferenceMin, size.palmCircumferenceMax, size.palmToFingerLength, size.wristMin, size.wristMax, size.footLength,
+            size.frontLength, size.backLength, size.width, size.weightGram, size.volumeML, size.customSize]);
+            return rows;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
     async getAllProductSizes(product_id) {
         try {
-            var q = "SELECT * FROM productsize where productId = " + product_id;
+            var q = "SELECT * FROM productsize where productId = " + product_id + " AND isDeleted = 0";
             const data = await query(q);
             if (data.length > 0) {
                 return data;
@@ -937,6 +1003,28 @@ module.exports.productSizes = {
         } catch (err) {
         }
         return [];
+    },
+    async getProductSizeById(productSizeId) {
+        try {
+            var q = "SELECT * FROM productsize where id = " + productSizeId + " AND isDeleted = 0";
+            const data = await query(q);
+            if (data.length > 0) {
+                return data[0]
+            }
+        } catch (err) {
+        }
+        return null;
+    },
+    async deleteProductSize(id) {
+        try {
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update productsize set isDeleted = 1, deletedAt = ? where id = " + id;
+            const rows = await query(q, [deletedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err)
+            return false;
+        }
     }
 }
 
@@ -1000,6 +1088,17 @@ module.exports.productInventory = {
         try {
             let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
             var q = "Update productinventory set isDeleted = 1, deletedAt = ? where productColorId = " + productColorId;
+            const rows = await query(q, [deletedAt]);
+            return rows;
+        } catch (err) {
+            console.log(err)
+            return false;
+        }
+    },
+    async deleteProductSizeInventories(productSizeId) {
+        try {
+            let deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var q = "Update productinventory set isDeleted = 1, deletedAt = ? where productSizeId = " + productSizeId;
             const rows = await query(q, [deletedAt]);
             return rows;
         } catch (err) {
