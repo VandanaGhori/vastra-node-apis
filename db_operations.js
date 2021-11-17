@@ -1050,14 +1050,28 @@ module.exports.productInventory = {
             return false;
         }
     },
-    async updateProductInventories(table_name, inventoryValues) {
+    async addProductInventory(inventory) {
         try {
-            var q = "Update " + table_name + " set productSizeId = ?, productColorId = ?, quantityAvailable = ? Where id = ? and productId = ?";
+            var q = "Insert into productinventory (productId, productSizeId, productColorId, quantityAvailable) values (?)";
 
-            // Pass individual element as a replacement of ? in query... No need to convert into array of elements
-            await inventoryValues.forEach(element => {
-                query(q, [element.productSizeId, element.productColorId, element.quantityAvailable, element.id, element.productId]);
-            })
+            let inventoryObj = {
+                'productId': inventory.productId,
+                'productSizeId': inventory.productSizeId,
+                'productColorId': inventory.productColorId,
+                'quantityAvailable': inventory.quantityAvailable
+            }
+            query(q, [Object.values(inventoryObj)]);
+
+            return true;
+        } catch (err) {
+            console.log("Error = " + err);
+            return false;
+        }
+    },
+    async updateProductInventory(inventory) {
+        try {
+            var q = "Update productinventory set productSizeId = ?, productColorId = ?, quantityAvailable = ? Where id = ?";
+            query(q, [inventory.productSizeId, inventory.productColorId, inventory.quantityAvailable, inventory.id]);
 
             return true;
         } catch (err) {
@@ -1072,6 +1086,17 @@ module.exports.productInventory = {
         } catch (err) {
             return [];
         }
+    },
+    async getProductInventoryById(id) {
+        try {
+            var q = "SELECT * FROM productinventory where id = " + id + " AND isDeleted = 0";
+            const data = await query(q);
+            if (data.length > 0) {
+                return data[0]
+            }
+        } catch (err) {
+        }
+        return null;
     },
     async deleteProductInventory(id) {
         try {
