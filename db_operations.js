@@ -101,76 +101,91 @@ module.exports.product = {
             "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked "+
             "from product as p, user as u, designer as d"; 
             
-            whereConditions += " p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
+            whereConditions += " where p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
             " and p.designerId = d.id and u.id = d.userId";
 
-            if(productFilters.productPatterns != undefined) {
+            if(productFilters.productPatterns != undefined && productFilters.productPatterns != null
+                && productFilters.productPatterns.length != 0) {
                 whereConditions += " and pattern in (" + productFilters.productPatterns + ")";
             }
 
-            if(productFilters.productKnitWovens != undefined) {
+            if(productFilters.productKnitWovens != undefined && productFilters.productKnitWovens != null
+                && productFilters.productKnitWovens.length != 0) {
                 whereConditions += " and knitOrWoven in (" + productFilters.productKnitWovens + ")";
             }
 
-            if(productFilters.productWashCares != undefined) {
+            if(productFilters.productWashCares != undefined && productFilters.productWashCares != null
+                && productFilters.productWashCares.length != 0) {
                 whereConditions += " and washCare in (" + productFilters.productWashCares + ")";
             }
 
-             if(productFilters.productColors != undefined) {
-                q += " , productcolor as pc, color as c";
-                whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
-                "c.id = pc.thirdColorId) and pc.productId = p.id) ";
-             }
+            if(productFilters.productColors != undefined && productFilters.productColors != null
+                && productFilters.productColors.length != 0) {
+            q += " , productcolor as pc, color as c";
+            whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
+            "c.id = pc.thirdColorId) and pc.productId = p.id) ";
+            }
 
-             if(productFilters.productMaterials != undefined) {
-                q += " , productmaterial as pm, material as m";
-                whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
-             }
+            if(productFilters.productMaterials != undefined && productFilters.productMaterials != null
+                && productFilters.productMaterials.length != 0) {
+            q += " , productmaterial as pm, material as m";
+            whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
+            }
 
-             if(productFilters.productOccasions != undefined) {
-                q += " , productoccasion as po";
-                whereConditions += " and po.occasion in (" + productFilters.productOccasions + 
-                ") and po.productId = p.id";
-             }
+            if(productFilters.productOccasions != undefined && productFilters.productOccasions != null
+                && productFilters.productOccasions.length != 0) {
+            q += " , productoccasion as po";
+            whereConditions += " and po.occasion in (" + productFilters.productOccasions + 
+            ") and po.productId = p.id";
+            }
 
-             if(productFilters.productSeasons != undefined) {
-                q += " , productseason as ps";
-                whereConditions += " and ps.season in (" + productFilters.productSeasons + 
-                ") and ps.productId = p.id";
-             }
+            if(productFilters.productSeasons != undefined && productFilters.productSeasons != null
+                && productFilters.productSeasons.length != 0) {
+            q += " , productseason as ps";
+            whereConditions += " and ps.season in (" + productFilters.productSeasons + 
+            ") and ps.productId = p.id";
+            }
 
-             if(productFilters.productTypes != undefined) {
-                q += " , producttype as pt";
-                whereConditions += " and p.typeId in (" + productFilters.productTypes + 
-                ") and pt.id = p.typeId";
-             }
+            if(productFilters.productTypes != undefined && productFilters.productTypes != null
+                && productFilters.productTypes.length != 0) {
+            q += " , producttype as pt";
+            whereConditions += " and p.typeId in (" + productFilters.productTypes + 
+            ") and pt.id = p.typeId";
+            }
 
-             if(productFilters.productDesigners != undefined) {
-                whereConditions += " and p.designerId in (" + productFilters.productDesigners + 
-                ") and p.designerId = d.id";
-             }
+            if(productFilters.productDesigners != undefined && productFilters.productDesigners != null
+                && productFilters.productDesigners.length != 0) {
+            whereConditions += " and p.designerId in (" + productFilters.productDesigners + 
+            ") and p.designerId = d.id";
+            }
 
-             if(productFilters.productBrandSizes != undefined) {
+            if(productFilters.productBrandSizes != undefined && productFilters.productBrandSizes != null
+                && productFilters.productBrandSizes.length != 0) {
+            q += " , productsize as pSize";
+            brandSizes = productFilters.productBrandSizes.map(i=>`'${i}'`).join(',');
+            whereConditions += " and pSize.brandSize in (" + brandSizes + 
+            ") and pSize.productId = p.id";
+            } 
+
+            if(productFilters.productCustomSizes != undefined && productFilters.productCustomSizes != null
+                && productFilters.productCustomSizes.length != 0) {
+            if(productFilters.productBrandSizes == undefined) {
                 q += " , productsize as pSize";
-                brandSizes = productFilters.productBrandSizes.map(i=>`'${i}'`).join(',');
-                whereConditions += " and pSize.brandSize in (" + brandSizes + 
-                ") and ps.productId = p.id";
-             } 
+            }
+            customSizes = productFilters.productCustomSizes.map(i=>`'${i}'`).join(',');
+            whereConditions += " and pSize.customSize in (" + customSizes + 
+            ") and pSize.sizeType = 4 and pSize.productId = p.id";
+            }
 
-             if(productFilters.productCustomSizes != undefined) {
-                if(productFilters.productBrandSizes == undefined) {
-                    q += " , productsize as pSize";
-                }
-                customSizes = productFilters.productCustomSizes.map(i=>`'${i}'`).join(',');
-                whereConditions += " and pSize.customSize in (" + customSizes + 
-                ") and pSize.sizeType = 4 and pSize.productId = p.id";
-             }
+            var finalQuery = q + whereConditions;
 
-             var query = q + whereConditions;
-             console.log("Query = " + query);
-             //console.log("where " + whereConditions);
-             
-            const data = await query(query);
+            console.log("Query = \n " + finalQuery);
+            //console.log("where " + whereConditions);
+            
+            const data = await query(finalQuery);
+
+            console.log("data " + JSON.stringify(data));
+                        
             if(data.length > 0) {
                 return data;
             } 

@@ -1,7 +1,6 @@
 const db_operations = require("../db_operations");
 var utils = require('../utils');
 
-
 module.exports = {
     getAllProducts: async function (req, res) {
         let productResponse = await db_operations.product.getAllProducts("product");
@@ -244,6 +243,15 @@ module.exports = {
         }
 
         let filteredProductsResponse = await db_operations.product.getFilteredProducts(input);
+
+        for(let i = 0; i<filteredProductsResponse.length; i++) {
+            filteredProductsResponse[i].images = JSON.parse(filteredProductsResponse[i].images);
+            if(filteredProductsResponse[i].isUserLiked == 1) {
+                filteredProductsResponse[i].isUserLiked = true;
+            } else {
+                filteredProductsResponse[i].isUserLiked = false;
+            }
+        }
 
         if(filteredProductsResponse != false && filteredProductsResponse.length > 0) {
             res.json(utils.sendResponse(true, 200, "All the Filtered Products", filteredProductsResponse));
