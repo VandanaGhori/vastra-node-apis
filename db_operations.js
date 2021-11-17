@@ -110,13 +110,20 @@ module.exports.product = {
     async getFilteredProducts(productFilters) {
         try {
             var whereConditions = "";
-            var q = "Select p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, d.userId as designerId, d.brandName," +
+
+            var q = "Select distinct p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, d.userId as designerId, d.brandName," +
                 " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
                 "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
-                "from product as p, user as u, designer as d";
+                "from product as p ";
 
-            whereConditions += " where p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
-                " and p.designerId = d.id and u.id = d.userId";
+            whereConditions += " left join designer as d ON p.designerId = d.id left join user as u ON u.id = d.userId where (p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
+                ")";
+
+            if (productFilters.productTypes != undefined && productFilters.productTypes != null
+                && productFilters.productTypes.length != 0) {
+                whereConditions += " and (p.typeId in (" + productFilters.productTypes +
+                    "))";
+            }
 
             if (productFilters.productPatterns != undefined && productFilters.productPatterns != null
                 && productFilters.productPatterns.length != 0) {
@@ -135,70 +142,72 @@ module.exports.product = {
 
             if (productFilters.productColors != undefined && productFilters.productColors != null
                 && productFilters.productColors.length != 0) {
-                q += " , productcolor as pc, color as c";
-                whereConditions += " and ((c.id = pc.prominentColorId or c.id = pc.secondaryColorId or " +
-                    "c.id = pc.thirdColorId) and pc.productId = p.id) ";
+                q += " left join productcolor as pc ON pc.productId = p.id";
+                whereConditions += " and (pc.prominentColorId in (" + productFilters.productColors +
+                    ") or pc.secondaryColorId in (" + productFilters.productColors +
+                    ") or pc.thirdColorId in (" + productFilters.productColors +
+                    "))";
             }
 
             if (productFilters.productMaterials != undefined && productFilters.productMaterials != null
                 && productFilters.productMaterials.length != 0) {
-                q += " , productmaterial as pm, material as m";
-                whereConditions += " and (m.id = pm.materialId and pm.productId = p.id) ";
+                q += " left join productmaterial as pm ON pm.productId = p.id";
+                whereConditions += " and (pm.materialId in (" + productFilters.productMaterials +
+                    "))";
             }
 
             if (productFilters.productOccasions != undefined && productFilters.productOccasions != null
                 && productFilters.productOccasions.length != 0) {
-                q += " , productoccasion as po";
-                whereConditions += " and po.occasion in (" + productFilters.productOccasions +
-                    ") and po.productId = p.id";
+                q += " left join productoccasion as po ON po.productId = p.id";
+                whereConditions += " and (po.occasion in (" + productFilters.productOccasions +
+                    "))";
             }
 
             if (productFilters.productSeasons != undefined && productFilters.productSeasons != null
                 && productFilters.productSeasons.length != 0) {
-                q += " , productseason as ps";
-                whereConditions += " and ps.season in (" + productFilters.productSeasons +
-                    ") and ps.productId = p.id";
-            }
-
-            if (productFilters.productTypes != undefined && productFilters.productTypes != null
-                && productFilters.productTypes.length != 0) {
-                q += " , producttype as pt";
-                whereConditions += " and p.typeId in (" + productFilters.productTypes +
-                    ") and pt.id = p.typeId";
+                q += " left join productseason as ps ON ps.productId = p.id";
+                whereConditions += " and (ps.season in (" + productFilters.productSeasons +
+                    "))";
             }
 
             if (productFilters.productDesigners != undefined && productFilters.productDesigners != null
                 && productFilters.productDesigners.length != 0) {
-                whereConditions += " and p.designerId in (" + productFilters.productDesigners +
-                    ") and p.designerId = d.id";
+                whereConditions += " and p.designerId in (" + productFilters.productDesigners + ")";
             }
 
+            // Only brandSize is selected
             if (productFilters.productBrandSizes != undefined && productFilters.productBrandSizes != null
                 && productFilters.productBrandSizes.length != 0) {
-                q += " , productsize as pSize";
+                q += " left join productsize as pSize ON pSize.productId = p.id";
                 brandSizes = productFilters.productBrandSizes.map(i => `'${i}'`).join(',');
-                whereConditions += " and pSize.brandSize in (" + brandSizes +
-                    ") and pSize.productId = p.id";
+                whereConditions += " and (pSize.brandSize in (" + brandSizes +
+                    "))";
             }
 
+            // Only customSize is selected
             if (productFilters.productCustomSizes != undefined && productFilters.productCustomSizes != null
                 && productFilters.productCustomSizes.length != 0) {
-                if (productFilters.productBrandSizes == undefined) {
-                    q += " , productsize as pSize";
+                if (productFilters.productBrandSizes == undefined || productFilters.productBrandSizes == null
+                    || productFilters.productBrandSizes.length == 0) {
+                    q += " left join productsize as pSize ON pSize.productId = p.id";
+                    customSizes = productFilters.productCustomSizes.map(i => `'${i}'`).join(',');
+                    whereConditions += " and (pSize.customSize in (" + customSizes +
+                        ") and (pSize.sizeType = 4))";
                 }
+                // Both Selected then "or" condition should apply
                 customSizes = productFilters.productCustomSizes.map(i => `'${i}'`).join(',');
-                whereConditions += " and pSize.customSize in (" + customSizes +
-                    ") and pSize.sizeType = 4 and pSize.productId = p.id";
+                whereConditions += " or (pSize.customSize in (" + customSizes +
+                    ") and (pSize.sizeType = 4))";
             }
 
             var finalQuery = q + whereConditions;
 
-            console.log("Query = \n " + finalQuery);
+            //console.log("Query = \n " + finalQuery);
             //console.log("where " + whereConditions);
 
             const data = await query(finalQuery);
 
-            console.log("data " + JSON.stringify(data));
+            //console.log("data " + JSON.stringify(data));
 
             if (data.length > 0) {
                 return data;
