@@ -116,7 +116,9 @@ module.exports.product = {
                 "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
                 "from product as p ";
 
-            whereConditions += " left join designer as d ON p.designerId = d.id left join user as u ON u.id = d.userId where (p.price >= " + productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
+            whereConditions += " left join designer as d ON p.designerId = d.id left join user as u " +
+                "ON u.id = d.userId where (p.price >= " +
+                productFilters.minPrice + " and p.price <= " + productFilters.maxPrice +
                 ")";
 
             if (productFilters.productTypes != undefined && productFilters.productTypes != null
@@ -200,6 +202,8 @@ module.exports.product = {
                     ") and (pSize.sizeType = 4))";
             }
 
+            whereConditions += " and p.isDeleted = 0";
+
             var finalQuery = q + whereConditions;
 
             //console.log("Query = \n " + finalQuery);
@@ -213,6 +217,29 @@ module.exports.product = {
                 return data;
             }
         } catch (err) {
+            return false;
+        }
+        return [];
+    },
+    async getProductFeeds(userId) {
+        try {
+            var q = "Select distinct p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, " +
+            " d.userId as designerId, d.brandName," +
+            " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
+            "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
+            "from product as p left join designer as d ON p.designerId = d.id left join user as u ON u.id = d.userId " +
+            "left join followers as f ON f.designerId = d.id " +
+            " where p.isDeleted = 0 and f.shopperId = " + userId +
+            " order by p.createdAt DESC";
+
+            //console.log("Query " + q);
+            const data = await query(q);
+
+            //console.log("Data = " + data);
+            if (data.length > 0) {
+                return data;
+            }
+        } catch {
             return false;
         }
         return [];
@@ -302,14 +329,17 @@ module.exports.validate = {
         }
         return false;
     },
-    getUserIdFromToken(token, callback) {
-        var q = "Select userId from login where sessionToken = '" + token + "'";
-        db.query(q, function (err, res) {
-            if (err) {
-                return callback(err, null);
+    async getUserIdFromToken(token) {
+        try {
+            var q = "Select userId from login where sessionToken = '" + token + "'";
+            const data = await query(q);
+            if (data.length > 0) {
+                return data;
             }
-            callback(null, res);
-        })
+        } catch (err) {
+            return false;
+        }
+        return false;
     }
 }
 

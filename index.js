@@ -74,6 +74,10 @@ app.put('/product', function(req,res){
     products.updateProduct(req,res)
 })
 
+app.get('/product/list/feed', function(req, res){
+    products.getProductFeeds(req,res)
+})
+
 // ----------------UploadImage--------------------
 app.post('/upload', function(req,res){
     image.uploadImage(req,res)

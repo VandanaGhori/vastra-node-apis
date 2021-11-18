@@ -232,6 +232,7 @@ module.exports = {
     },
     getFilteredProducts: async function(req, res) {
         input = req.body;
+
         token = req.headers['token'];
         if(token == null) {
             return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
@@ -243,6 +244,10 @@ module.exports = {
         }
 
         let filteredProductsResponse = await db_operations.product.getFilteredProducts(input);
+
+        if(filteredProductsResponse.length == 0 || filteredProductsResponse == []) {
+            return res.json(utils.sendResponse(false, 500, "No matched product found."));   
+        }
 
         for(let i = 0; i<filteredProductsResponse.length; i++) {
             filteredProductsResponse[i].images = JSON.parse(filteredProductsResponse[i].images);
@@ -258,10 +263,6 @@ module.exports = {
             return;
         }
 
-        if(filteredProductsResponse.length == 0) {
-            return res.json(utils.sendResponse(false, 500, "No matched product found."));   
-        }
-        
         return res.json(utils.sendResponse(false, 500, "Oops something went wrong with filtered products"));
     },
     updateProduct: async function (req, res) {
@@ -366,4 +367,46 @@ module.exports = {
 
         return res.json(utils.sendResponse(true, 200, "Product is updated"));
     },
+    getProductFeeds: async function (req, res) {
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"));
+        }
+
+        let validateTokenResult = await db_operations.validate.validateToken(token);
+        if(validateTokenResult == false) {
+            return res.json(utils.sendResponse(false, 403, "User is not authorized"));
+        }
+
+        let response = await db_operations.validate.getUserIdFromToken(token);
+        if(response == false) {
+            return res.json(utils.sendResponse(false, 500, "Oops something went wrong with token"));
+        }
+
+        //console.log("User Id = " + response[0]['userId']);
+
+        let getProductFeedsResponse = await db_operations.product.getProductFeeds(response[0]['userId']);
+
+        //console.log("getProductFeedsResponse = " + getProductFeedsResponse);
+
+        if(getProductFeedsResponse.length == 0 || getProductFeedsResponse == []) {
+            return res.json(utils.sendResponse(false, 500, "No product found. Follow designers to see latest feed."));   
+        }
+        
+        for(let i = 0; i<getProductFeedsResponse.length; i++) {
+            getProductFeedsResponse[i].images = JSON.parse(getProductFeedsResponse[i].images);
+            if(getProductFeedsResponse[i].isUserLiked == 1) {
+                getProductFeedsResponse[i].isUserLiked = true;
+            } else {
+                getProductFeedsResponse[i].isUserLiked = false;
+            }
+        }
+
+        if(getProductFeedsResponse != false && getProductFeedsResponse.length > 0) {
+            res.json(utils.sendResponse(true, 200, "All the latest feed", getProductFeedsResponse));
+            return;
+        }
+
+        return res.json(utils.sendResponse(false, 500, "Oops something went wrong with feed"));
+    }
 };
