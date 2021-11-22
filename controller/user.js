@@ -159,7 +159,7 @@ module.exports = {
         token = req.headers['token'];
 
         if(token == null) {
-            res.json(utils.sendResponse(false, 500, "Token is required for logout."))
+            res.json(utils.sendResponse(false, 500, "Invalid request."))
             return;
         }
 
