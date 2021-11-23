@@ -245,8 +245,14 @@ module.exports = {
 
         let filteredProductsResponse = await db_operations.product.getFilteredProducts(input);
 
+        //console.log("filteredProducts List " + filteredProductsResponse);
+
+        if(filteredProductsResponse == null || filteredProductsResponse == undefined) {
+            filteredProductsResponse = [];
+        }
+        
         if(filteredProductsResponse.length == 0 || filteredProductsResponse == []) {
-            return res.json(utils.sendResponse(false, 500, "No matched product found."));   
+            return res.json(utils.sendResponse(true, 500, "No matched product found.", filteredProductsResponse));   
         }
 
         for(let i = 0; i<filteredProductsResponse.length; i++) {

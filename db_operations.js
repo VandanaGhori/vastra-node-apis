@@ -202,7 +202,7 @@ module.exports.product = {
                     ") and (pSize.sizeType = 4))";
             }
 
-            whereConditions += " and p.isDeleted = 0";
+            whereConditions += " and p.isDeleted = 0 order by p.createdAt DESC";
 
             var finalQuery = q + whereConditions;
 
