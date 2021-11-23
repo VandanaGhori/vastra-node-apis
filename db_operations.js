@@ -224,13 +224,13 @@ module.exports.product = {
     async getProductFeeds(userId) {
         try {
             var q = "Select distinct p.id, p.typeId, p.title, p.images, p.price, p.totalLikes, p.overAllRating, " +
-            " d.userId as designerId, d.brandName," +
-            " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
-            "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
-            "from product as p left join designer as d ON p.designerId = d.id left join user as u ON u.id = d.userId " +
-            "left join followers as f ON f.designerId = d.id " +
-            " where p.isDeleted = 0 and f.shopperId = " + userId +
-            " order by p.createdAt DESC";
+                " d.userId as designerId, d.brandName," +
+                " CONCAT(u.firstName, ' ', u.lastName) as designerName, " +
+                "(select count(*) from userlikes where productId = p.id and userId = u.id) as isUserLiked " +
+                "from product as p left join designer as d ON p.designerId = d.id left join user as u ON u.id = d.userId " +
+                "left join followers as f ON f.designerId = d.id " +
+                " where p.isDeleted = 0 and f.shopperId = " + userId +
+                " order by p.createdAt DESC";
 
             //console.log("Query " + q);
             const data = await query(q);
@@ -514,14 +514,18 @@ module.exports.fashionDesigner = {
     async getAllDesigners() {
         try {
             var q = "SELECT u.id as userId,u.email,u.firstName, u.lastName, u.address, u.city, u.province, u.postalCode, u.avatarURL" +
-                ", d.id, d.brandName, d.tagline FROM user as u, " +
-                "designer as d where type = 2 and u.id = d.userId";
+                ", d.id, d.brandName, d.tagline" +
+                ", (select count(*) from followers where designerId = d.id) as totalFollowers" +
+                ", (select count(*) from product where designerId = d.id AND isDeleted = 0) as totalProducts" +
+                " FROM user as u, designer as d"+
+                " where type = 2 and u.id = d.userId";
             //console.log("Query " + q);
             const data = await query(q);
             if (data.length > 0) {
                 return data;
             }
         } catch (err) {
+            console.log(err)
         }
         return [];
     }
