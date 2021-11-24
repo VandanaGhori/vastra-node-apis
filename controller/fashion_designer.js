@@ -124,10 +124,10 @@ module.exports = {
             let updateUserResponse = await db_operations.user.updateUser("user", user, user_id);
             if (updateUserResponse != false) {
                 let updateDesignerResponse = await db_operations.fashionDesigner.updateFashionDesigner("designer", designer, user_id);
-                if(updateDesignerResponse != false) {
+                if (updateDesignerResponse != false) {
                     return res.json(utils.sendResponse(true, 200, "Designer's Profile is updated successfully"));
                 } else {
-                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));    
+                    return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
                 }
             } else {
                 return res.json(utils.sendResponse(false, 500, "Opps something went wrong"));
@@ -136,9 +136,20 @@ module.exports = {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
     },
-    getDesigners: async function(req,res) {
-        let designersResponse = await db_operations.fashionDesigner.getAllDesigners();
-        if(designersResponse.length > 0) {
+    getDesigners: async function (req, res) {
+        token = req.headers['token'];
+        if (token == null) {
+            return res.json(utils.sendResponse(false, 500, "Token is required for authorization"))
+        }
+
+        let userResp = await db_operations.validate.getUserIdFromToken(token);
+        if (userResp == false) {
+            return res.json(utils.sendResponse(false, 500, "Token is not valid"));
+        }
+        let shopperId = userResp[0]['userId'];
+
+        let designersResponse = await db_operations.fashionDesigner.getAllDesigners(shopperId);
+        if (designersResponse.length > 0) {
             res.json(utils.sendResponse(true, 200, "All Designers", designersResponse));
             return;
         } else {

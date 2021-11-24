@@ -511,17 +511,21 @@ module.exports.fashionDesigner = {
         }
         return false;
     },
-    async getAllDesigners() {
+    async getAllDesigners(shopperId) {
         try {
             var q = "SELECT u.id as userId,u.email,u.firstName, u.lastName, u.address, u.city, u.province, u.postalCode, u.avatarURL" +
                 ", d.id, d.brandName, d.tagline" +
                 ", (select count(*) from followers where designerId = d.id) as totalFollowers" +
                 ", (select count(*) from product where designerId = d.id AND isDeleted = 0) as totalProducts" +
-                " FROM user as u, designer as d"+
+                ", EXISTS(select * from followers where designerId = d.id AND shopperId = " + shopperId + ") as isFollowing" +
+                " FROM user as u, designer as d" +
                 " where type = 2 and u.id = d.userId";
             //console.log("Query " + q);
             const data = await query(q);
             if (data.length > 0) {
+                data.map(async (element) => {
+                    element.isFollowing = element.isFollowing ? true : false
+                })
                 return data;
             }
         } catch (err) {
@@ -1174,4 +1178,40 @@ module.exports.productInventory = {
             return false;
         }
     }
+}
+
+module.exports.followers = {
+    async addFollower(designerId, shopperId) {
+        try {
+            var q = "Insert into followers (designerId, shopperId) values (?)";
+            let obj = {
+                'designerId': designerId,
+                'shopperId': shopperId
+            }
+            const rows = await query(q, [Object.values(obj)]);
+            return rows;
+        } catch (err) {
+            console.log("Error = " + err);
+            return null;
+        }
+    },
+    async deleteFollower(designerId, shopperId) {
+        try {
+            var q = "Delete from followers where designerId = " + designerId + " AND shopperId = " + shopperId;
+            const rows = await query(q);
+            // console.log("Delete record " + rows)
+            return rows;
+        } catch (err) {
+            return false;
+        }
+    },
+    async getFollower(designerId, shopperId) {
+        try {
+            var q = "SELECT * FROM followers where designerId = " + designerId + " AND shopperId = " + shopperId;
+            const data = await query(q);
+            return data;
+        } catch (err) {
+        }
+        return null;
+    },
 }
