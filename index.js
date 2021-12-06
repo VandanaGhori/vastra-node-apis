@@ -124,6 +124,10 @@ app.put('/user', function (req, res) {
     user.updateShopper(req, res)
 })
 
+app.get('/user/list/basic', function (req, res) {
+    user.getUsersBasicInfo(req, res)
+})
+
 // -----------------FashionDesigner-------------
 app.post('/fd/user', function (req, res) {
     fashionDesigner.addNewFashionDesigner(req, res)

@@ -400,6 +400,22 @@ module.exports.user = {
         }
         return false;
     },
+    async getUsersById(ids) {
+        try {
+            var q = "Select id,firstName,lastName,avatarURL from user where id in (" + ids + ")";
+            const data = await query(q);
+            if (data.length > 0) {
+                data.map(async (element) => {
+                    element.userId = element.id
+                })
+                return data;
+            }
+        } catch (err) {
+            console.log(err)
+            //return false;
+        }
+        return [];
+    },
     async checkLoginCredentials(table_name, login_param) {
         try {
             var q = "Select id,type from " + table_name + " Where email = '" + login_param.email +

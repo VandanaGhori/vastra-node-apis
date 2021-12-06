@@ -87,7 +87,7 @@ module.exports = {
 
         let isEmailExist = await db_operations.user.isEmailExist("user", input.email);
 
-        if(isEmailExist == false) {
+        if (isEmailExist == false) {
             res.json(utils.sendResponse(false, 500, "Email does not exist!"));
             return;
         }
@@ -95,7 +95,7 @@ module.exports = {
         let loginResponse = await db_operations.user.checkLoginCredentials("user", loginCredentials);
 
         //console.log("Login response " + loginResponse);
-        
+
         if (loginResponse != false) {
             let user_id = loginResponse['id'];
             let user_type = loginResponse['type'];
@@ -150,7 +150,7 @@ module.exports = {
                     }
                 }
             } else {
-                return res.json(utils.sendResponse(false, 500, "Oops something went wrong with updating session."));        
+                return res.json(utils.sendResponse(false, 500, "Oops something went wrong with updating session."));
             }
         }
         return res.json(utils.sendResponse(false, 403, "Incorrect username or password."));
@@ -158,13 +158,13 @@ module.exports = {
     logout: async function (req, res) {
         token = req.headers['token'];
 
-        if(token == null) {
+        if (token == null) {
             res.json(utils.sendResponse(false, 500, "Invalid request."))
             return;
         }
 
         let logoutResponse = db_operations.user.deleteSessionToken("login", token);
-        if(logoutResponse) {
+        if (logoutResponse) {
             res.json(utils.sendResponse(true, 200, "Logout successfully."))
             return;
         } else {
@@ -207,7 +207,17 @@ module.exports = {
         } else {
             return res.json(utils.sendResponse(false, 403, "User is not authorized"));
         }
-    }
+    },
+    getUsersBasicInfo: async function (req, res) {
+        input = req.query;
+        if (input.ids == null) {
+            res.json(utils.sendResponse(false, 404, "Parameter(s) are missing"));
+            return;
+        }
+
+        let userResponse = await db_operations.user.getUsersById(input.ids);
+        return res.json(utils.sendResponse(true, 200, "Users", userResponse));
+    },
 }
 
 async function updateUserSession(userId, deviceId) {
